@@ -6,7 +6,7 @@ import messageController from "../controllers/message";
 const messageRouter = Router();
 
 messageRouter.post("/staff-message", messageController.staff);
-
+messageRouter.get("/get-message", messageController.getStaffMessage)
 
 
 

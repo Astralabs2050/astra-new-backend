@@ -3,69 +3,43 @@ import { StaffMessageModel, UsersModel } from "../model";
 
 export class MessageController {
     public staff = async (req: any, res: Response) => {
-        const { message, recipient } = req.body;
+        const { message, recipient,userType } = req.body;
+        if(userType === 'staff'){
+
         try {
-            let users;
-            // Get recipients
+            let users: any[];
+
             if (recipient === "all") {
                 users = await UsersModel.findAll({
-                    where: {
-                        userType: 'student',
-                    },
+                    where: { userType: 'student' },
                 });
             } else if (recipient === "staff") {
                 users = await UsersModel.findAll({
-                    where: {
-                        userType: 'staff',
-                    },
+                    where: { userType: 'staff' },
                 });
             } else {
                 users = await UsersModel.findAll({
-                    where: {
-                        level: recipient,
-                    },
+                    where: { level: recipient },
                 });
             }
 
-            if (users && users.length > 0) {
-                const { id } = req?.user;
-                // Create a StaffMessageModel for each user excluding the sender
-                const createStaffModels = await Promise.all(
-                    users.map(async (user) => {
-                        try {
-                            // Exclude the sender from the list of recipients
-                            if (user.id !== id) {
-                                await StaffMessageModel.create({
-                                    message,
-                                    senderId: id,
-                                    receiverId: user.id,
-                                });
-                                // You can return some indication of success for each user if needed
-                                return {
-                                    status: true,
-                                    message: `Message successfully sent to user with email ${user.email}`,
-                                };
-                            } else {
-                                return {
-                                    status: false,
-                                    message: `Skipping sender with user with email ${user.email}`,
-                                };
-                            }
-                        } catch (err:any) {
-                            // Handle any errors that occurred during the database operation
-                            return {
-                                status: false,
-                                message: `Error sending message to user with email ${user.email}: ${err.message}`,
-                            };
-                        }
-                    })
-                );
+            const senderId = req?.user?.id;
 
-                // Send the response after the loop
+            if (users && users.length > 0) {
+                // Use Promise.all to parallelize the creation of StaffMessageModel instances
+                await Promise.all(users.map(async (user) => {
+                    if (user.id !== senderId) {
+                        await StaffMessageModel.create({
+                            message,
+                            senderId,
+                            receiver: recipient,
+                        });
+                    }
+                }));
+
                 res.json({
                     status: true,
                     message: "Messages successfully sent to all users",
-                    details: createStaffModels, // Include additional details if needed
                 });
             } else {
                 res.json({
@@ -81,7 +55,46 @@ export class MessageController {
                 error: err.message,
             });
         }
+        }else{
+            res.json({
+                status:false,
+                message:"you need to be a staff to be able to send messages"
+            })
+        }
     };
+    public getStaffMessage = async(req:any,res:Response)=>{
+       //get the user info 
+       const {userType,level} = req?.user
+       try{
+        let message: any;
+        if(userType === "staff"){
+            message = await StaffMessageModel.findAll({
+                where:{
+                    receiver:userType
+                }
+            })
+        }else{
+            message = await StaffMessageModel.findAll({
+                where:{
+                    receiver:level
+                }
+            })
+        }
+        console.log(message,'message')
+        return res.json({
+            status:true,
+            message:'message gotten',
+            data:message
+        })
+
+       }catch(err){
+        return res.json({
+            status:false,
+            message:`an error occured ${err}`
+        })
+       }
+        
+    }
 }
 
 const messageController = new MessageController();

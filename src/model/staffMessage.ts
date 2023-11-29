@@ -20,9 +20,13 @@ import {
     @Column(DataType.UUID)
     id!: string;
   
-    @Column(DataType.STRING)
+    @Column(DataType.TEXT)
     message?: string;
-  
+    
+    
+    @Column(DataType.STRING)
+    receiver!: string;
+
     @ForeignKey(() => User)
     @Column(DataType.UUID)
     senderId!: string;
@@ -30,11 +34,11 @@ import {
     @BelongsTo(() => User, { foreignKey: 'senderId', as: 'sender' })
     sender!: User;
   
-    @ForeignKey(() => User)
-    @Column(DataType.UUID)
-    receiverId!: string;
+    // @ForeignKey(() => User)
+    // @Column(DataType.UUID)
+    // receiverId!: string;
   
-    @BelongsTo(() => User, { foreignKey: 'receiverId', as: 'receiver' })
-    receiver!: User;
+    // @BelongsTo(() => User, { foreignKey: 'receiverId', as: 'receiver' })
+    // receiver!: User;
   }
   
