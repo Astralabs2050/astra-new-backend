@@ -50,8 +50,10 @@ export class AuthController {
       const salt: string = await bcrypt.genSalt(15);
       const hashPassword: string = await bcrypt.hash(password, salt)
       const otp = uuidv4();
-      // Create user
-      const newUser = {
+      let newUser:any;
+     if(userType === "student"){
+       // Create user
+       newUser = {
         email,
         password: hashPassword,
         phoneNumber,
@@ -60,6 +62,17 @@ export class AuthController {
         level,
         otp
       };
+     }else{
+       // Create user
+       newUser = {
+        email,
+        password: hashPassword,
+        phoneNumber,
+        fullName,
+        userType,
+        otp
+      }
+     }
 
       // Save user to the database
       await UsersModel.create(newUser);

@@ -65,6 +65,7 @@ export class MessageController {
     public getStaffMessage = async(req:any,res:Response)=>{
        //get the user info 
        const {userType,level} = req?.user
+       const {firstname} = req?.user
        try{
         let message: any;
         if(userType === "staff"){
@@ -80,12 +81,34 @@ export class MessageController {
                 }
             })
         }
-        console.log(message,'message')
+       
+        const messagePromises = message.map(async (a:any) => {
+            const staffInfo:any = await UsersModel.findOne({
+                where: {
+                    id: a.senderId
+                },
+                attributes: ["fullname"]
+            });
+         // Assuming staffInfo contains the sender's name
+            const messageWithSenderName = {
+                message: a.message,
+                senderName: staffInfo ? staffInfo?.dataValues?.fullname : 'Unknown'
+            };
+            console.log(messageWithSenderName,'message')
+            return messageWithSenderName;
+        });
+        
+        // Wait for all promises to resolve
+        const result = await Promise.all(messagePromises);
+      
         return res.json({
-            status:true,
-            message:'message gotten',
-            data:message
-        })
+            status: true,
+            message: 'messages retrieved',
+            data: result
+        });
+        
+        
+        
 
        }catch(err){
         return res.json({
