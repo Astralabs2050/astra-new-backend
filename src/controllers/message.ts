@@ -3,7 +3,8 @@ import { StaffMessageModel, UsersModel } from "../model";
 
 export class MessageController {
     public staff = async (req: any, res: Response) => {
-        const { message, recipient,userType } = req.body;
+        const {userType} = req?.user;
+        const { message, recipient } = req.body;
         if(userType === 'staff'){
 
         try {
@@ -39,12 +40,12 @@ export class MessageController {
 
                 res.json({
                     status: true,
-                    message: "Messages successfully sent to all users",
+                    message: `Messages successfully sent to ${recipient} ${recipient === "all" ? "users" : recipient ==="staff" ? "staff" : "level students "}`,
                 });
             } else {
                 res.json({
                     status: false,
-                    message: "No user found",
+                    message: `No ${recipient} ${recipient === "all" ? "users" : recipient ==="staff" ? "staff" : "level students "} found`,
                 });
             }
         } catch (err:any) {
@@ -92,7 +93,8 @@ export class MessageController {
          // Assuming staffInfo contains the sender's name
             const messageWithSenderName = {
                 message: a.message,
-                senderName: staffInfo ? staffInfo?.dataValues?.fullname : 'Unknown'
+                senderName: staffInfo ? staffInfo?.dataValues?.fullname : 'Unknown',
+                time: a.createdAt
             };
             console.log(messageWithSenderName,'message')
             return messageWithSenderName;
