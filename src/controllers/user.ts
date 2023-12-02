@@ -1,6 +1,6 @@
 import {Request,Response} from "express";
 import {UsersModel} from "../model";
-import { getUploadedFile, uploadFile } from "../../util/helperFunctions";
+import { getSingleUploadedMedia, uploadSingleMedia } from "../../util/helperFunctions";
 
  class User {
     public getUser = async (req: Request, res: Response) => {
@@ -34,7 +34,7 @@ import { getUploadedFile, uploadFile } from "../../util/helperFunctions";
       
           const userData = [];
           for (const user of users) {
-            const profileImg = await getUploadedFile(user.dataValues, "PROFILE_IMAGE");
+            const profileImg = await getSingleUploadedMedia(user.dataValues, "PROFILE_IMAGE");
             const userDataItem = {
               ...user.dataValues,
               profileImg,
@@ -60,7 +60,7 @@ import { getUploadedFile, uploadFile } from "../../util/helperFunctions";
             try{
                 const {user,link} = req.body
                 const mediaType = "PROFILE_IMAGE"
-                const uploadImage = await uploadFile(user,mediaType,link)
+                const uploadImage = await uploadSingleMedia(user,mediaType,link)
                 if(uploadImage?.success){
                     return res.json({
                         status:true,

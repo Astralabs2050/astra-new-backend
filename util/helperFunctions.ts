@@ -1,6 +1,6 @@
 import { MediaModel, UsersModel } from "../src/model";
 
-export const uploadFile = async (user: any, mediaType: string, link: string) => {
+export const uploadSingleMedia = async (user: any, mediaType: string, link: string) => {
     try {
         // Check if the user exists
         const userExists = await UsersModel.findOne({
@@ -48,7 +48,7 @@ export const uploadFile = async (user: any, mediaType: string, link: string) => 
     }
 };
 
-export const getUploadedFile =  async (user: any, mediaType: string) => {
+export const getSingleUploadedMedia =  async (user: any, mediaType: string) => {
    // Check if the user exists
    const userExists = await UsersModel.findOne({
     where:{

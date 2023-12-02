@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { StaffMessageModel, UsersModel } from "../model";
-import { getUploadedFile } from "../../util/helperFunctions";
+import { getSingleUploadedMedia } from "../../util/helperFunctions";
 
 export class MessageController {
     public staff = async (req: any, res: Response) => {
@@ -95,7 +95,7 @@ export class MessageController {
                     },
                     attributes: ["fullname","id"]
                 });
-                const profileImg = await getUploadedFile(staffInfo?.dataValues,"PROFILE_IMAGE")
+                const profileImg = await getSingleUploadedMedia(staffInfo?.dataValues,"PROFILE_IMAGE")
                 // Assuming staffInfo contains the sender's name
                 const messageWithSenderName = {
                     message: a.message,

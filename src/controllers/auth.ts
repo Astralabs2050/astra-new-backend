@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import { sendUserMail } from "../../util/sendMail";
 import { successHTML,errorHTML } from "../../template/emailVerification";
-import { getUploadedFile,uploadFile } from "../../util/helperFunctions";
+import { getSingleUploadedMedia,uploadSingleMedia } from "../../util/helperFunctions";
 
 export class AuthController {
   public register = async (req: Request, res: Response) => {
@@ -80,7 +80,7 @@ export class AuthController {
       // Save user to the database
      const newCreateUser = await UsersModel.create(newUser);
        //upload profile picture
-       const uploadImage = await uploadFile(newCreateUser,"PROFILE_IMAGE","https://img.icons8.com/doodle/48/user-male-circle.png")
+       const uploadImage = await uploadSingleMedia(newCreateUser,"PROFILE_IMAGE","https://img.icons8.com/doodle/48/user-male-circle.png")
       //send mail notification
       try{
         const mail = sendUserMail(email,fullName,otp)
@@ -160,7 +160,7 @@ export class AuthController {
             },
             jwtSecret,
           );
-            const profileImg = await getUploadedFile(userExists, 'PROFILE_IMAGE')
+            const profileImg = await getSingleUploadedMedia(userExists, 'PROFILE_IMAGE')
           return res.json({
             status: true,
             message: "Login successful",
