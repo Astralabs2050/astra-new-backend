@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import { sendUserMail } from "../../util/sendMail";
 import { successHTML,errorHTML } from "../../template/emailVerification";
+import { getUploadedFile,uploadFile } from "../../util/helperFunctions";
+
 export class AuthController {
   public register = async (req: Request, res: Response) => {
     const { fullName, phoneNumber, email, password, userType,level } = req.body;
@@ -62,6 +64,7 @@ export class AuthController {
         level,
         otp
       };
+     
      }else{
        // Create user
        newUser = {
@@ -75,7 +78,9 @@ export class AuthController {
      }
 
       // Save user to the database
-      await UsersModel.create(newUser);
+     const newCreateUser = await UsersModel.create(newUser);
+       //upload profile picture
+       const uploadImage = await uploadFile(newCreateUser,"PROFILE_IMAGE","https://img.icons8.com/doodle/48/user-male-circle.png")
       //send mail notification
       try{
         const mail = sendUserMail(email,fullName,otp)
@@ -136,6 +141,7 @@ export class AuthController {
             phoneNumber: phoneNumber,
             userType: userType,
           },
+          
         });
       }
   
@@ -154,11 +160,11 @@ export class AuthController {
             },
             jwtSecret,
           );
-  
+            const profileImg = await getUploadedFile(userExists, 'PROFILE_IMAGE')
           return res.json({
             status: true,
             message: "Login successful",
-            data: { ...userExists?.dataValues, token: token },
+            data: { ...userExists?.dataValues, token: token,profileImg },
           });
         } else {
           return res.json({

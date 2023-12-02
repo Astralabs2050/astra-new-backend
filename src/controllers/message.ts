@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { StaffMessageModel, UsersModel } from "../model";
+import { getUploadedFile } from "../../util/helperFunctions";
 
 export class MessageController {
     public staff = async (req: any, res: Response) => {
@@ -63,62 +64,66 @@ export class MessageController {
             })
         }
     };
-    public getStaffMessage = async(req:any,res:Response)=>{
-       //get the user info 
-       const {userType,level} = req?.user
-       const {firstname} = req?.user
-       try{
-        let message: any;
-        if(userType === "staff"){
-            message = await StaffMessageModel.findAll({
-                where:{
-                    receiver:userType
-                }
-            })
-        }else{
-            message = await StaffMessageModel.findAll({
-                where:{
-                    receiver:level
-                }
-            })
-        }
-       
-        const messagePromises = message.map(async (a:any) => {
-            const staffInfo:any = await UsersModel.findOne({
-                where: {
-                    id: a.senderId
-                },
-                attributes: ["fullname"]
+    public getStaffMessage = async (req: any, res: Response) => {
+        // Get the user info
+        const { userType, level } = req?.user;
+        const { firstname } = req?.user;
+    
+        try {
+            let message: any;
+    
+            if (userType === "staff") {
+                message = await StaffMessageModel.findAll({
+                    where: {
+                        receiver: userType
+                    },
+                    order: [['createdAt', 'DESC']] // Sort by createdAt in descending order
+                });
+            } else {
+                message = await StaffMessageModel.findAll({
+                    where: {
+                        receiver: level
+                    },
+                    order: [['createdAt', 'DESC']] // Sort by createdAt in descending order
+                });
+            }
+    
+            const messagePromises = message.map(async (a: any) => {
+                const staffInfo: any = await UsersModel.findOne({
+                    where: {
+                        id: a.senderId
+                    },
+                    attributes: ["fullname","id"]
+                });
+                const profileImg = await getUploadedFile(staffInfo?.dataValues,"PROFILE_IMAGE")
+                // Assuming staffInfo contains the sender's name
+                const messageWithSenderName = {
+                    message: a.message,
+                    senderName: staffInfo ? staffInfo?.dataValues?.fullname : 'Unknown',
+                    profileImg,
+                    time: a.createdAt
+                };
+    
+                console.log(messageWithSenderName, 'message');
+                return messageWithSenderName;
             });
-         // Assuming staffInfo contains the sender's name
-            const messageWithSenderName = {
-                message: a.message,
-                senderName: staffInfo ? staffInfo?.dataValues?.fullname : 'Unknown',
-                time: a.createdAt
-            };
-            console.log(messageWithSenderName,'message')
-            return messageWithSenderName;
-        });
-        
-        // Wait for all promises to resolve
-        const result = await Promise.all(messagePromises);
-      
-        return res.json({
-            status: true,
-            message: 'messages retrieved',
-            data: result
-        });
-        
-        
-        
-
-       }catch(err){
-        return res.json({
-            status:false,
-            message:`an error occured ${err}`
-        })
-       }
-        
+    
+            // Wait for all promises to resolve
+            const result = await Promise.all(messagePromises);
+    
+            return res.json({
+                status: true,
+                message: 'Messages retrieved',
+                data: result
+            });
+    
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({
+                status: false,
+                message: 'An error occurred while retrieving messages.'
+            });
+        }
     }
 }
 

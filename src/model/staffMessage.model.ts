@@ -31,7 +31,7 @@ import {
     @Column(DataType.UUID)
     senderId!: string;
   
-    @BelongsTo(() => User, { foreignKey: 'senderId', as: 'sender' })
+    @BelongsTo(() => User, { foreignKey: 'senderId', as: 'sender', onDelete: 'CASCADE' })
     sender!: User;
   
     // @ForeignKey(() => User)

@@ -1,9 +1,10 @@
 import {Router} from 'express';
 import { UserController } from '../controllers/user';
 
+
 const userRouter = Router();
 
 userRouter.get("/get/:userType/:level",UserController.getUser)
-
+userRouter.post("/upload-profile-image",UserController.uploadProfileImage)
 
 export default userRouter
