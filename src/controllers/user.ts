@@ -79,6 +79,37 @@ import { getSingleUploadedMedia, uploadSingleMedia } from "../../util/helperFunc
                 })
             }
         }
+        public getSelf = async(req:any,res:Response)=>{
+            const {id} = req?.user
+            try{
+                const userExists = await UsersModel.findOne({
+                    where:{
+                        id
+                    }
+                });
+                if(userExists){
+                    const profileImg = await getSingleUploadedMedia(userExists, 'PROFILE_IMAGE')
+                    return res.json({
+                        status:true,
+                        message:'user found',
+                        data:{
+                            ...userExists.dataValues,
+                            profileImg
+                        }
+                    })
+                }else{
+                    return res.json({
+                        status:false,
+                        message:'user not found'
+                    })
+                }
+            }catch(err){
+                return res.json({
+                    status:false,
+                    message:err
+                })
+            }
+        }
     }
 
 export const UserController = new User();

@@ -6,5 +6,6 @@ const userRouter = Router();
 
 userRouter.get("/get/:userType/:level",UserController.getUser)
 userRouter.post("/upload-profile-image",UserController.uploadProfileImage)
+userRouter.get("/self",UserController.getSelf)
 
 export default userRouter
