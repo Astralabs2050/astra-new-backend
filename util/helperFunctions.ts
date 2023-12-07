@@ -74,3 +74,7 @@ if (existingMedia) {
     throw new Error("No such media found");
 }
 }
+
+export const sendPrivateMessage = (sender_id:string,receiver_id:string,message:string,file:any)=>{
+    
+}

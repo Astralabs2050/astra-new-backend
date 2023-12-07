@@ -6,12 +6,14 @@ import routes from "./routes";
 import cors from "cors";
 import * as dotenv from "dotenv";
 import { errors } from "celebrate";
+import { handleSocketConnection } from "./socket";
 
 dotenv.config();
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, { /* options */ });
 const port = process.env.APP_PORT || 3001;
+const secretKey: any = process.env.JWT_SECRET;
 
 // ENABLE CORS
 app.use(cors());
@@ -19,15 +21,10 @@ app.use(cors());
 app.use(errors());
 // PARSE JSON
 app.use(express.json());
-//run express serve 
-io.on("connection", (socket) => {
-  // ...
-  console.log(socket.id + ' connection');
-});
-
-
 // Database connection
 initDB();
+// Socket.IO handling
+handleSocketConnection(io);
 
 // Routes
 app.use(routes);
