@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 
 export const successHTML = `
 <html>
@@ -41,7 +41,6 @@ export const successHTML = `
 </html>
 
 `;
-
 
 export const errorHTML = `
   <html>

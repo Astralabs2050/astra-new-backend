@@ -1,7 +1,12 @@
 // Import packages
 import { Sequelize } from "sequelize-typescript";
 import { Dialect } from "sequelize/types/sequelize";
-import { UsersModel,StaffMessageModel, MediaModel,MessageModel} from "./model";
+import {
+  UsersModel,
+  StaffMessageModel,
+  MediaModel,
+  MessageModel,
+} from "./model";
 import { dbConfig } from "../common/utility";
 
 const sequelizeOptions: any = {
@@ -12,7 +17,7 @@ const sequelizeOptions: any = {
   dialectOptions: {
     ssl: { require: true, rejectUnauthorized: false },
   },
-  models: [UsersModel,StaffMessageModel,MediaModel,MessageModel],
+  models: [UsersModel, StaffMessageModel, MediaModel, MessageModel],
 };
 
 const sequelize = new Sequelize(

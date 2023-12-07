@@ -26,4 +26,4 @@ export const welcomeScreen = `
     <h1>Designed with love by <a href="http://lawblaze.netlify.app/" target="_blank">lawblaze</a></h1>
   </body>
 </html>
-`
+`;

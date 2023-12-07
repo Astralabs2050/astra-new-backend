@@ -1,14 +1,13 @@
+import axios from "axios";
 
-import axios from 'axios';
-
-export const sendUserMail = async (mail:any, name:any, otp:any) => {
-  const apiUrl = 'https://api.brevo.com/v3/smtp/email';
+export const sendUserMail = async (mail: any, name: any, otp: any) => {
+  const apiUrl = "https://api.brevo.com/v3/smtp/email";
   const apiKey = process.env.API_KEY; // Replace with your actual API key
   const hostUrl = process.env.HOST_URL;
 
   const data = {
     sender: {
-      name: 'lawblaze',
+      name: "lawblaze",
       email: process.env.MAIL_SENDER,
     },
     to: [
@@ -17,7 +16,7 @@ export const sendUserMail = async (mail:any, name:any, otp:any) => {
         name: name,
       },
     ],
-    subject: 'Verify your Mail',
+    subject: "Verify your Mail",
     htmlContent: `
     <!DOCTYPE html>
     <html lang="en">
@@ -56,15 +55,15 @@ export const sendUserMail = async (mail:any, name:any, otp:any) => {
   };
 
   const headers = {
-    'accept': 'application/json',
-    'api-key': apiKey,
-    'content-type': 'application/json',
+    accept: "application/json",
+    "api-key": apiKey,
+    "content-type": "application/json",
   };
 
   try {
     const response = await axios.post(apiUrl, data, { headers });
     console.log(response.data);
-  } catch (error:any) {
+  } catch (error: any) {
     console.error(error.message || error);
   }
 };

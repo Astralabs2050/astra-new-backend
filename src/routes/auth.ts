@@ -17,8 +17,8 @@ authRouter.post(
   authController.login,
 );
 
-authRouter.get('/verify/:otp',authController.verifyOtp)
-authRouter.get('/resend-otp/:email',authController.resendOtp)
+authRouter.get("/verify/:otp", authController.verifyOtp);
+authRouter.get("/resend-otp/:email", authController.resendOtp);
 
 authRouter.post("/forget-password");
 

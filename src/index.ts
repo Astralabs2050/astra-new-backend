@@ -7,28 +7,49 @@ import cors from "cors";
 import * as dotenv from "dotenv";
 import { errors } from "celebrate";
 import { handleSocketConnection } from "./socket";
+import portfinder from "portfinder";
 
 dotenv.config();
 const app = express();
-const httpServer = createServer(app);
-const io = new Server(httpServer, { /* options */ });
-const port = process.env.APP_PORT || 3001;
 const secretKey: any = process.env.JWT_SECRET;
 
-// ENABLE CORS
-app.use(cors());
-// Middleware to handle validation errors
-app.use(errors());
-// PARSE JSON
-app.use(express.json());
-// Database connection
-initDB();
-// Socket.IO handling
-handleSocketConnection(io);
+async function startServer() {
+  let port = 3001;
 
-// Routes
-app.use(routes);
+  try {
+    // Try to get an available port dynamically, starting from 3001
+    port = await portfinder.getPortPromise({ port: port });
+  } catch (error:any) {
+    console.error("Error finding an available port:", error.message);
+    // If an error occurs (e.g., no available ports), use a different port
+    port = 3002;
+  }
 
-httpServer.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  const httpServer = createServer(app);
+  const io = new Server(httpServer, {
+    /* options */
+  });
+
+  // ENABLE CORS
+  app.use(cors());
+  // Middleware to handle validation errors
+  app.use(errors());
+  // PARSE JSON
+  app.use(express.json());
+  // Database connection
+  initDB();
+  // Socket.IO handling
+  handleSocketConnection(io);
+
+  // Routes
+  app.use(routes);
+
+  httpServer.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error("Error starting the server:", error.message);
+  process.exit(1);
 });

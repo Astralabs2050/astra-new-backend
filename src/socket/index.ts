@@ -1,13 +1,14 @@
 // File: socketHandler.ts
 import { Server, Socket } from "socket.io";
 import jwt from "jsonwebtoken";
+import { MessageModel, UsersModel } from "../model";
 
 export const handleSocketConnection = (io: Server) => {
   io.use((socket: any, next) => {
     const token: any = socket.request.headers.token;
 
     if (!token) {
-      return next(new Error('Unauthorized: Missing token'));
+      return next(new Error("Unauthorized: Missing token"));
     }
 
     const secretKey: any = process.env.JWT_SECRET;
@@ -34,18 +35,49 @@ export const handleSocketConnection = (io: Server) => {
     return next();
   });
 
-  io.on('connection', (socket) => {
-    console.log(socket.id + ' connected');
-
-    socket.on('receive_private_message', (data) => {
-      const { sender_id, recevier_id, message } = data;
-      console.log(`Message received from ${sender_id}: ${message}`);
-
-      io.emit('send_private_message', { sender: sender_id, message });
+  //connecting the sockect.io instance
+  io.on("connection", (socket) => {
+    console.log(socket.id + " connected");
+  
+    socket.on("receive_private_message", async (data) => {
+      const { receiverId, message } = data;
+  
+      try {
+        // Check if the receiver exists
+        const receiverExists = await UsersModel.findOne({
+          where: {
+            id: receiverId,
+          },
+        });
+  
+        if (receiverExists) {
+          // Save the message to the database
+          const newMessage = await MessageModel.create({
+            message,
+            receiverId,
+            senderId: socket.id,
+          });
+          //get all the messages from users chat
+          const chatHistory = await MessageModel.findAll({
+            where:{
+                receiverId,
+                senderId: socket.id
+            },
+            order: [["createdAt", "DESC"]]
+          })
+          // Emit the message directly to the receiver
+          io.to(receiverId).emit("send_private_message", chatHistory);
+        } else {
+          throw new Error("User not found");
+        }
+      } catch (err) {
+        console.error(err, 'error');
+      }
     });
-
-    socket.on('disconnect', () => {
-      console.log(socket.id + ' disconnected');
+  
+    socket.on("disconnect", () => {
+      console.log(socket.id + " disconnected");
     });
   });
+  
 };

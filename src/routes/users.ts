@@ -1,11 +1,10 @@
-import {Router} from 'express';
-import { UserController } from '../controllers/user';
-
+import { Router } from "express";
+import { UserController } from "../controllers/user";
 
 const userRouter = Router();
 
-userRouter.get("/get/:userType/:level",UserController.getUser)
-userRouter.post("/upload-profile-image",UserController.uploadProfileImage)
-userRouter.get("/self",UserController.getSelf)
+userRouter.get("/get/:userType/:level", UserController.getUser);
+userRouter.post("/upload-profile-image", UserController.uploadProfileImage);
+userRouter.get("/self", UserController.getSelf);
 
-export default userRouter
+export default userRouter;
