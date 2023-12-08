@@ -7,8 +7,8 @@ import { getSingleUploadedMedia } from "../../util/helperFunctions";
 export const handleSocketConnection = async (io: Server) => {
   io.use(async (socket: any, next) => {
     try {
-      const token: string = socket.request.headers.token as string;
-
+      const token: string = socket.handshake.auth.token as string;
+        
       if (!token) {
         throw new Error("Unauthorized: Missing token");
       }
@@ -36,9 +36,18 @@ export const handleSocketConnection = async (io: Server) => {
     return next();
   });
 
-  io.on("connection", (socket: Socket) => {
+  io.on("connection", async(socket: Socket) => {
     console.log(socket.id + " connected");
-
+    //set the user as active
+    await UsersModel.update(
+        { active: true },
+        {
+          where: {
+            id: socket.id
+          }
+        }
+      );
+      
     socket.on("receive_private_message", async (data) => {
       try {
         const { receiverId, message,type } = data;
@@ -95,8 +104,20 @@ export const handleSocketConnection = async (io: Server) => {
       }
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async() => {
       console.log(socket.id + " disconnected");
+      //set the user as inactive
+      await UsersModel.update(
+        { 
+            active: false,
+            lastseen: new Date
+         },
+        {
+          where: {
+            id: socket.id
+          }
+        }
+      );
     });
   });
 };

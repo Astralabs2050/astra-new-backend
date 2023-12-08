@@ -35,6 +35,13 @@ export class UsersModel extends Model {
   @Column(DataType.BOOLEAN)
   verified?: boolean;
 
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  active?: boolean;
+
+  @Column(DataType.DATE)
+  lastseen?: Date;
+
   @Column(DataType.STRING)
   otp?: string;
 

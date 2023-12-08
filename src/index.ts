@@ -10,7 +10,15 @@ import { handleSocketConnection } from "./socket";
 import portfinder from "portfinder";
 
 dotenv.config();
+
 const app = express();
+
+  // ENABLE CORS
+  app.use(cors({
+    origin: 'http://localhost:3000', // Replace with the origin of your React app
+    credentials: true,
+  }));
+  
 const secretKey: any = process.env.JWT_SECRET;
 
 async function startServer() {
@@ -27,11 +35,11 @@ async function startServer() {
 
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
-    /* options */
+  cors:{
+    origin: 'http://localhost:3000', // Replace with the origin of
+  }
   });
 
-  // ENABLE CORS
-  app.use(cors());
   // Middleware to handle validation errors
   app.use(errors());
   // PARSE JSON
