@@ -23,6 +23,9 @@ export class MessageModel extends Model {
   @Column(DataType.TEXT)
   message?: string;
 
+  @Column(DataType.STRING)
+  type?:string
+
   @ForeignKey(() => User)
   @Column(DataType.UUID)
   receiverId!: string;

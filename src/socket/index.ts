@@ -41,7 +41,7 @@ export const handleSocketConnection = async (io: Server) => {
 
     socket.on("receive_private_message", async (data) => {
       try {
-        const { receiverId, message } = data;
+        const { receiverId, message,type } = data;
 
         // Check if the receiver exists
         const receiverExists = await UsersModel.findOne({
@@ -55,6 +55,7 @@ export const handleSocketConnection = async (io: Server) => {
           const newMessage = await MessageModel.create({
             message,
             receiverId,
+            type,
             senderId: socket.id,
           });
 

@@ -174,7 +174,7 @@ export class AuthController {
             "PROFILE_IMAGE",
           );
           return res.json({
-            status: true,
+            status: true, 
             message: "Login successful",
             data: { ...userExists?.dataValues, token: token, profileImg },
           });
