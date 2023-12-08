@@ -4,24 +4,25 @@ import jwt from "jsonwebtoken";
 import { MessageModel, UsersModel } from "../model";
 import { getSingleUploadedMedia } from "../../util/helperFunctions";
 
-export const handleSocketConnection = async (io: Server) => {
+const JWT_SECRET = process.env.JWT_SECRET || "";
+
+const handleSocketConnection = async (io: Server) => {
   io.use(async (socket: any, next) => {
     try {
       const token: string = socket.handshake.auth.token as string;
-        
+
       if (!token) {
         throw new Error("Unauthorized: Missing token");
       }
 
-      const secretKey: string = process.env.JWT_SECRET || "";
-      const decoded: any = await jwt.verify(token, secretKey);
+      const decoded: any = await jwt.verify(token, JWT_SECRET);
 
       const currentTimestamp = Math.floor(Date.now() / 1000);
       if (decoded.exp && decoded.exp < currentTimestamp) {
         throw new Error("Unauthorized: Token Expired");
       }
 
-      let userData = decoded?.data;
+      const userData = decoded?.data;
       if (userData) {
         delete userData?.password;
       }
@@ -36,27 +37,21 @@ export const handleSocketConnection = async (io: Server) => {
     return next();
   });
 
-  io.on("connection", async(socket: Socket) => {
+  io.on("connection", async (socket: Socket) => {
     console.log(socket.id + " connected");
-    //set the user as active
-    await UsersModel.update(
-        { active: true },
-        {
-          where: {
-            id: socket.id
-          }
-        }
-      );
-      
-    socket.on("receive_private_message", async (data) => {
+
+    // Set the user as active
+    await UsersModel.update({ active: true }, { where: { id: socket.id } });
+
+    socket.on("send_private_message", async (data: any) => {
+      console.log(data, 'from front end');
+
       try {
-        const { receiverId, message,type } = data;
+        const { receiverId, message, type } = data;
 
         // Check if the receiver exists
         const receiverExists = await UsersModel.findOne({
-          where: {
-            id: receiverId,
-          },
+          where: { id: receiverId },
         });
 
         if (receiverExists) {
@@ -70,53 +65,40 @@ export const handleSocketConnection = async (io: Server) => {
 
           // Get all the messages from users chat
           const chatHistory = await MessageModel.findAll({
-            where: {
-              receiverId,
-              senderId: socket.id,
-            },
+            where: { receiverId, senderId: socket.id },
             order: [["createdAt", "DESC"]],
           });
 
-          const receiverImg = await getSingleUploadedMedia(
-            {
-              id: receiverId,
-            },
-            "PROFILE_IMAGE"
-          );
-          const senderImg = await getSingleUploadedMedia(
-            {
-              id: socket.id,
-            },
-            "PROFILE_IMAGE"
-          );
+          const [receiverImg, senderImg] = await Promise.all([
+            getSingleUploadedMedia({ id: receiverId }, "PROFILE_IMAGE"),
+            getSingleUploadedMedia({ id: socket.id }, "PROFILE_IMAGE"),
+          ]);
 
           // Emit the message directly to the receiver
-          io.to(receiverId).emit("send_private_message", {
+          io.to(receiverId).emit("receive_private_message", {
             chatHistory,
             senderImg,
             receiverImg,
           });
         } else {
-          throw new Error("User not found");
+          // Emit an error event to the sender
+          socket.emit("private_message_error", { error: "User not found" });
         }
       } catch (err) {
+        socket.emit("private_message_error", {
+          error: "Error processing private message",
+        });
         handleSocketError(err, 'Error processing private message:');
       }
     });
 
-    socket.on("disconnect", async() => {
+    socket.on("disconnect", async () => {
       console.log(socket.id + " disconnected");
-      //set the user as inactive
+
+      // Set the user as inactive
       await UsersModel.update(
-        { 
-            active: false,
-            lastseen: new Date
-         },
-        {
-          where: {
-            id: socket.id
-          }
-        }
+        { active: false, lastseen: new Date() },
+        { where: { id: socket.id } }
       );
     });
   });
@@ -125,3 +107,5 @@ export const handleSocketConnection = async (io: Server) => {
 const handleSocketError = (err: any, message: string) => {
   console.error(message, err);
 };
+
+export { handleSocketConnection };
