@@ -13,12 +13,14 @@ dotenv.config();
 
 const app = express();
 
-  // ENABLE CORS
-  app.use(cors({
-    origin: 'http://localhost:3000', // Replace with the origin of your React app
+// ENABLE CORS
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Replace with the origin of your React app
     credentials: true,
-  }));
-  
+  }),
+);
+
 const secretKey: any = process.env.JWT_SECRET;
 
 async function startServer() {
@@ -27,7 +29,7 @@ async function startServer() {
   try {
     // Try to get an available port dynamically, starting from 3001
     port = await portfinder.getPortPromise({ port: port });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Error finding an available port:", error.message);
     // If an error occurs (e.g., no available ports), use a different port
     port = 3002;
@@ -35,9 +37,9 @@ async function startServer() {
 
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
-  cors:{
-    origin: 'http://localhost:3000', // Replace with the origin of
-  }
+    cors: {
+      origin: "http://localhost:3000", // Replace with the origin of
+    },
   });
 
   // Middleware to handle validation errors

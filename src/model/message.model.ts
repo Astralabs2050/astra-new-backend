@@ -24,17 +24,17 @@ export class MessageModel extends Model {
   message?: string;
 
   @Column(DataType.STRING)
-  type?:string
+  type?: string;
 
   @ForeignKey(() => User)
   @Column(DataType.UUID)
   receiverId!: string;
 
   @Column(DataType.BOOLEAN)
-  sent!:boolean
+  sent!: boolean;
 
   @Column(DataType.BOOLEAN)
-  read!:boolean
+  seen!: boolean;
 
   @BelongsTo(() => User, {
     foreignKey: "receiverId",
