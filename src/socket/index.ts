@@ -45,52 +45,54 @@ const handleSocketConnection = async (io: Server) => {
     await UsersModel.update({ active: true }, { where: { id: socket.id } });
 
     // Emit all users
-    socket.on("getUser", async () => {
-      io.emit("user", await getUsersWithMessages(socket.id));
+    socket.on('getUser', async () => {
+      io.emit('user', await getUsersWithMessages(socket.id));
     });
 
     // Get previous messages for the user
-    socket.on("get_previous_messages", async (data: any) => {
+    socket.on('get_previous_messages', async (data: any) => {
       try {
         const sentMessages = await getMessages(data.senderId, data.receiverId);
-        const receivedMessages = await getMessages(
-          data.receiverId,
-          data.senderId,
-        );
+        const receivedMessages = await getMessages(data.receiverId, data.senderId);
 
-        socket.emit("previous_messages", [
-          ...sentMessages,
-          ...receivedMessages,
-        ]);
+        socket.emit('previous_messages', [...sentMessages, ...receivedMessages]);
       } catch (error) {
         console.error(error);
       }
     });
 
     // Handle private messages
-    socket.on("privateMessage", async (data: any) => {
+    socket.on('privateMessage', async (data: any) => {
       try {
         const message = await saveAndBroadcastMessage(data);
-
-        io.to(data.senderId).emit("privateMessage", message);
-        io.to(data.receiverId).emit("privateMessage", message);
+        
+        io.to(data.senderId).emit('privateMessage', message);
+        io.to(data.receiverId).emit('privateMessage', message);
       } catch (error) {
         console.error(error);
       }
     });
-    socket.on("openChat", async (data) => {
-      const { recevier, sender } = data;
+    socket.on('openChat',async(data)=>{
+      const {recevier,sender} = data
       const updateResult = await MessageModel.update(
         { seen: true },
         {
           where: {
             senderId: sender,
-            receiverId: recevier, // Corrected spelling from 'recevier' to 'receiver'
-            seen: false || null,
-          },
-        },
+            receiverId:recevier, // Corrected spelling from 'recevier' to 'receiver'
+            seen: false || null
+          }
+        }
       );
-    });
+      try {
+        const sentMessages = await getMessages(data.senderId, data.receiverId);
+        const receivedMessages = await getMessages(data.receiverId, data.senderId);
+
+        socket.emit('previous_messages', [...sentMessages, ...receivedMessages]);
+      } catch (error) {
+        console.error(error);
+      }
+    })
 
     socket.on("disconnect", async () => {
       console.log(`${socket.id} disconnected`);
@@ -98,7 +100,7 @@ const handleSocketConnection = async (io: Server) => {
       // Set the user as inactive
       await UsersModel.update(
         { active: false, lastseen: new Date() },
-        { where: { id: socket.id } },
+        { where: { id: socket.id } }
       );
     });
   });
@@ -114,12 +116,9 @@ const getUsersWithMessages = async (socketId: string) => {
   if (allUsers) {
     return Promise.all(
       allUsers.map(async (user) => {
-        const profileImage = await getSingleUploadedMedia(
-          { id: user.id },
-          "PROFILE_IMAGE",
-        );
+        const profileImage = await getSingleUploadedMedia({ id: user.id }, "PROFILE_IMAGE");
         return { ...user.toJSON(), profileImage };
-      }),
+      })
     );
   }
 
@@ -133,11 +132,11 @@ const getMessages = async (senderId: string, receiverId: string) => {
 const saveAndBroadcastMessage = async (data: any) => {
   //check where the recevier is online
   const receiver = await UsersModel.findOne({
-    where: {
-      id: data.receiverId,
+    where:{
+      id:data.receiverId
     },
-    attributes: ["active"],
-  });
+    attributes:['active']
+  })
 
   const message = await MessageModel.create({
     message: data.message,
@@ -145,7 +144,7 @@ const saveAndBroadcastMessage = async (data: any) => {
     receiverId: data.receiverId,
     senderId: data.senderId,
     sent: true,
-    seen: receiver?.dataValues?.active,
+    seen:receiver?.dataValues?.active
   });
 
   return message;
