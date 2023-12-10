@@ -59,4 +59,11 @@ export class UsersModel extends Model {
 
   @Column(DataType.ENUM(...Object.values(userType)))
   userType!: userType;
+
+  // Override toJSON method to remove sensitive info
+  toJSON() {
+    const values = { ...this.get() } as any;
+    delete values.password;
+    return values;
+  }
 }

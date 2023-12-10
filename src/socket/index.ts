@@ -38,62 +38,42 @@ const handleSocketConnection = async (io: Server) => {
   });
 
   io.on("connection", async (socket: Socket) => {
-    console.log(socket.id + " connected");
+    console.log(`${socket.id} connected`);
 
     // Set the user as active
     await UsersModel.update({ active: true }, { where: { id: socket.id } });
 
-    socket.on("send_private_message", async (data: any) => {
-      console.log(data, 'from front end');
+    // Emit all users
+    socket.on('getUser', async () => {
+      io.emit('user', await getUsersWithMessages(socket.id));
+    });
 
+    // Get previous messages for the user
+    socket.on('get_previous_messages', async (data: any) => {
       try {
-        const { receiverId, message, type } = data;
+        const sentMessages = await getMessages(data.senderId, data.receiverId);
+        const receivedMessages = await getMessages(data.receiverId, data.senderId);
 
-        // Check if the receiver exists
-        const receiverExists = await UsersModel.findOne({
-          where: { id: receiverId },
-        });
+        socket.emit('previous_messages', [...sentMessages, ...receivedMessages]);
+      } catch (error) {
+        console.error(error);
+      }
+    });
 
-        if (receiverExists) {
-          // Save the message to the database
-          const newMessage = await MessageModel.create({
-            message,
-            receiverId,
-            type,
-            senderId: socket.id,
-          });
-
-          // Get all the messages from users chat
-          const chatHistory = await MessageModel.findAll({
-            where: { receiverId, senderId: socket.id },
-            order: [["createdAt", "DESC"]],
-          });
-
-          const [receiverImg, senderImg] = await Promise.all([
-            getSingleUploadedMedia({ id: receiverId }, "PROFILE_IMAGE"),
-            getSingleUploadedMedia({ id: socket.id }, "PROFILE_IMAGE"),
-          ]);
-
-          // Emit the message directly to the receiver
-          io.to(receiverId).emit("receive_private_message", {
-            chatHistory,
-            senderImg,
-            receiverImg,
-          });
-        } else {
-          // Emit an error event to the sender
-          socket.emit("private_message_error", { error: "User not found" });
-        }
-      } catch (err) {
-        socket.emit("private_message_error", {
-          error: "Error processing private message",
-        });
-        handleSocketError(err, 'Error processing private message:');
+    // Handle private messages
+    socket.on('privateMessage', async (data: any) => {
+      try {
+        const message = await saveAndBroadcastMessage(data);
+        
+        io.to(data.senderId).emit('privateMessage', message);
+        io.to(data.receiverId).emit('privateMessage', message);
+      } catch (error) {
+        console.error(error);
       }
     });
 
     socket.on("disconnect", async () => {
-      console.log(socket.id + " disconnected");
+      console.log(`${socket.id} disconnected`);
 
       // Set the user as inactive
       await UsersModel.update(
@@ -106,6 +86,37 @@ const handleSocketConnection = async (io: Server) => {
 
 const handleSocketError = (err: any, message: string) => {
   console.error(message, err);
+};
+
+const getUsersWithMessages = async (socketId: string) => {
+  const allUsers = await UsersModel.findAll();
+
+  if (allUsers) {
+    return Promise.all(
+      allUsers.map(async (user) => {
+        const profileImage = await getSingleUploadedMedia({ id: user.id }, "PROFILE_IMAGE");
+        return { ...user.toJSON(), profileImage };
+      })
+    );
+  }
+
+  return [];
+};
+
+const getMessages = async (senderId: string, receiverId: string) => {
+  return MessageModel.findAll({ where: { senderId, receiverId } });
+};
+
+const saveAndBroadcastMessage = async (data: any) => {
+  const message = await MessageModel.create({
+    message: data.message,
+    type: data.type,
+    receiverId: data.receiverId,
+    senderId: data.senderId,
+    sent: true
+  });
+
+  return message;
 };
 
 export { handleSocketConnection };
