@@ -11,7 +11,7 @@ articleRouter.get("/all",article.getAll);
 articleRouter.get("/created-by",isAuthenticated,article.getAllCreated);
 articleRouter.post("/post",isAuthenticated,article.post);
 articleRouter.patch("/approve/:articleId",isAuthenticated,article.approve);
-articleRouter.delete("/delete/:id",isAuthenticated);
+articleRouter.delete("/delete/:articleId",isAuthenticated,article.delete);
 
 
 export default articleRouter;

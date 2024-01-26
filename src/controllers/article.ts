@@ -129,6 +129,32 @@ class ArticleController {
             })
         }
     }
+    delete = async(req:any,res:Response)=>{
+        try{
+            const {articleId} = req.params
+            const articleExists =  await ArticleModel.findOne({
+                where:{
+                    id:articleId
+                }
+            })
+            if(!articleExists){
+                return res.json({
+                    status:false,
+                    message:"article do not exist"
+                })
+            }
+            await articleExists.destroy()
+            res.json({
+                status:true,
+                message:`article ${articleId} has been deleted sucessfully`
+            })
+        }catch(err){
+            return res.json({
+                status:false,
+                message:"an error occured" + err
+            })
+        }
+    }
 }
 
 const article =new ArticleController();
