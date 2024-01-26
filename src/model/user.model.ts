@@ -54,8 +54,9 @@ export class UsersModel extends Model {
   @Column(DataType.STRING)
   level?: string;
 
+  @Default(false)
   @Column(DataType.BOOLEAN)
-  isAdmin: boolean = false;
+  isAdmin?: boolean;
 
   @Column(DataType.ENUM(...Object.values(userType)))
   userType!: userType;

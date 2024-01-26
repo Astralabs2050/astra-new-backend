@@ -6,6 +6,7 @@ import {
   StaffMessageModel,
   MediaModel,
   MessageModel,
+  ArticleModel
 } from "./model";
 import { dbConfig } from "../common/utility";
 
@@ -17,7 +18,7 @@ const sequelizeOptions: any = {
   dialectOptions: {
     ssl: { require: true, rejectUnauthorized: false },
   },
-  models: [UsersModel, StaffMessageModel, MediaModel, MessageModel],
+  models: [UsersModel, StaffMessageModel, MediaModel, MessageModel,ArticleModel],
 };
 
 const sequelize = new Sequelize(
