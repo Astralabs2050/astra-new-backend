@@ -8,11 +8,12 @@ import * as dotenv from "dotenv";
 import { errors } from "celebrate";
 import { handleSocketConnection } from "./socket";
 import portfinder from "portfinder";
+import bodyParser = require("body-parser");
 
 dotenv.config();
 
 const app = express();
-
+app.use(bodyParser.json({ limit: '50mb' })); // Set the limit to an appropriate value
 // ENABLE CORS
 app.use(
   cors({

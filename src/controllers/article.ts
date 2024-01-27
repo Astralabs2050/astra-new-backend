@@ -5,6 +5,7 @@ class ArticleController {
        try{
         const {article,title} = req.body
         const {id,isAdmin} = req?.user
+        console.log(article,'article')
       if(!article){
         return res.json({
             status:false,
@@ -154,6 +155,34 @@ class ArticleController {
                 message:"an error occured" + err
             })
         }
+        
+    }
+    getOne = async(req:any,res:Response)=>{
+        try{
+            const {articleId} = req.params
+            const articleExists =  await ArticleModel.findOne({
+                where:{
+                    id:articleId
+                }
+            })
+            if(!articleExists){
+                return res.json({
+                    status:false,
+                    message:"article do not exist"
+                })
+            }
+            return res.json({
+                status:true,
+                message:`article ${articleId} gotten`,
+                data:articleExists
+            })
+        }catch(err:any){
+            return res.json({
+                status:false,
+                message:"an error occured" + err
+            })
+        }
+       
     }
 }
 
