@@ -130,6 +130,49 @@ class ArticleController {
             })
         }
     }
+    edit = async(req:any,res:Response)=>{
+        try{
+            const {id,isAdmin} = req?.user
+            const {articleId} = req.params
+            const {article} = req.body
+            if(!article){
+                return res.json({
+                    status:false,
+                    message:"no update found"
+                })
+            }
+            const articleExists =  await ArticleModel.findOne({
+                where:{
+                    id:articleId
+                }
+            })
+            if(!articleExists){
+                return res.json({
+                    status:false,
+                    message:"article do not exist"
+                })
+            }
+            if(articleExists.userId !== id){
+                return res.json({
+                    status:false,
+                    message:"You can only edit articles created by you"
+                })
+            }
+           
+            await articleExists.update({
+               article
+            })
+            return res.json({
+                status:true,
+                message:`article ${articleExists.id} has been updated`
+            })
+        }catch(err){
+            return res.json({
+                status:false,
+                message:"an error occured" + err
+            })
+        }
+    }
     delete = async(req:any,res:Response)=>{
         try{
             const {articleId} = req.params

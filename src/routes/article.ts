@@ -13,6 +13,6 @@ articleRouter.get("/created-by",isAuthenticated,article.getAllCreated);
 articleRouter.post("/post",isAuthenticated,article.post);
 articleRouter.patch("/approve/:articleId",isAuthenticated,article.approve);
 articleRouter.delete("/delete/:articleId",isAuthenticated,article.delete);
-
+articleRouter.patch("/edit/:articleId",isAuthenticated,article.edit);
 
 export default articleRouter;
