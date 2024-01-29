@@ -4,9 +4,9 @@ import { getSingleUploadedMedia } from "../../util/helperFunctions";
 
 export class MessageController {
   public staff = async (req: any, res: Response) => {
-    const { userType } = req?.user;
+    const { userType,isAdmin } = req?.user;
     const { message, recipient } = req.body;
-    if (userType === "staff") {
+    if (userType === "staff" || isAdmin) {
       try {
         let users: any[];
 
@@ -73,7 +73,7 @@ export class MessageController {
     } else {
       res.json({
         status: false,
-        message: "you need to be a staff to be able to send messages",
+        message: "you need to be a staff or admin to be able to broadcast message",
       });
     }
   };
