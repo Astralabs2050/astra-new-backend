@@ -15,9 +15,16 @@ dotenv.config();
 const app = express();
 app.use(bodyParser.json({ limit: '50mb' })); // Set the limit to an appropriate value
 // ENABLE CORS
+const allowedOrigins = [
+  "https://elect-app.vercel.app",
+  "https://elect-app-lawsondaniel.vercel.app",
+  "http://localhost:3000"
+  // Add more origins as needed
+];
+
 app.use(
   cors({
-    origin: "http://localhost:3000", // Replace with the origin of your React app
+    origin: allowedOrigins, // Replace with the origin of your React app
     credentials: true,
   }),
 );
@@ -39,7 +46,7 @@ async function startServer() {
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.HOST_URL || "http://localhost:3000", // Replace with the origin of
+      origin: allowedOrigins, // Replace with the origin of
     },
   });
 
