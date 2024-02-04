@@ -17,7 +17,7 @@ app.use(bodyParser.json({ limit: '50mb' })); // Set the limit to an appropriate 
 // ENABLE CORS
 app.use(
   cors({
-    origin: "http://localhost:3000", // Replace with the origin of your React app
+    origin: "https://elect-app.vercel.app/", // Replace with the origin of your React app
     credentials: true,
   }),
 );
@@ -39,7 +39,7 @@ async function startServer() {
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
     cors: {
-      origin: "http://localhost:3000", // Replace with the origin of
+      origin: process.env.HOST_URL, // Replace with the origin of
     },
   });
 
