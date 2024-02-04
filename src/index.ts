@@ -16,10 +16,11 @@ const app = express();
 app.use(bodyParser.json({ limit: '50mb' })); // Set the limit to an appropriate value
 // ENABLE CORS
 const allowedOrigins = [
-  "https://elect-app.vercel.app/",
-  "https://elect-app-lawsondaniel.vercel.app/",
+  "https://elect-app.vercel.app",
+  "https://elect-app-lawsondaniel.vercel.app",
   // Add more origins as needed
 ];
+
 app.use(
   cors({
     origin: allowedOrigins, // Replace with the origin of your React app
