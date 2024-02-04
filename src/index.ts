@@ -39,7 +39,7 @@ async function startServer() {
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
     cors: {
-      origin: "http://localhost:3000", // Replace with the origin of
+      origin: process.env.HOST_URL || "http://localhost:3000", // Replace with the origin of
     },
   });
 
