@@ -45,7 +45,8 @@ async function startServer() {
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.HOST_URL, // Replace with the origin of
+      origin: allowedOrigins,
+      credentials: true,
     },
   });
 
