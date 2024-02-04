@@ -18,6 +18,7 @@ app.use(bodyParser.json({ limit: '50mb' })); // Set the limit to an appropriate 
 const allowedOrigins = [
   "https://elect-app.vercel.app",
   "https://elect-app-lawsondaniel.vercel.app",
+  "http://localhost:3000"
   // Add more origins as needed
 ];
 
