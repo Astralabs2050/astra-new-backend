@@ -67,10 +67,15 @@ const handleSocketConnection = async (io: Server) => {
     // Get previous messages for the user
     socket.on('get_previous_messages', async (data: any) => {
       try {
-        const sentMessages = await getMessages(data.senderId, data.receiverId);
-        const receivedMessages = await getMessages(data.receiverId, data?.senderId);
+        if(data.senderId === data.receiverId){
+          const sentMessages = await getMessages(data.senderId, data.receiverId);
+          socket.emit('previous_messages', [...sentMessages]);
+        }else{
+          const sentMessages = await getMessages(data.senderId, data.receiverId);
+          const receivedMessages = await getMessages(data.receiverId, data?.senderId);
+          socket.emit('previous_messages', [...sentMessages, ...receivedMessages]);
+        }
 
-        socket.emit('previous_messages', [...sentMessages, ...receivedMessages]);
       } catch (error) {
         console.error(error);
       }
