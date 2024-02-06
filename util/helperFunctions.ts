@@ -102,7 +102,7 @@ try{
   const notification = await NotificationModel.create({
     notificationType:type,
     userId:userId,
-    notificationContent:`new message ${Sender?.dataValues?.fullName}`
+    notificationContent:`new message from ${Sender?.dataValues?.fullName}`
   })
   return notification
 }catch(err:any){
