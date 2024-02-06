@@ -87,7 +87,7 @@ const handleSocketConnection = async (io: Server) => {
         const message = await saveAndBroadcastMessage(data);
         let createNewNotification = await createNotification("NEW_MESSAGE",data.receiverId,data.senderId)
         console.log("createNewNotification",createNewNotification)
-        io.to(socket?.id).emit("newNotification",[createNewNotification])
+        io.to(data.receiverId).emit("newNotification",[createNewNotification])
   
         io.to(data.senderId).emit('privateMessage', message);
         io.to(data.receiverId).emit('privateMessage', message);
