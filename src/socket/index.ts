@@ -2,8 +2,9 @@
 import { Server, Socket } from "socket.io";
 import jwt from "jsonwebtoken";
 import { MessageModel, UsersModel } from "../model";
-import { getSingleUploadedMedia } from "../../util/helperFunctions";
+import { createNotification, getSingleUploadedMedia } from "../../util/helperFunctions";
 import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
+import { NotificationModel } from "../model/notification.model";
 
 const JWT_SECRET = process.env.JWT_SECRET || "";
 
@@ -40,10 +41,24 @@ const handleSocketConnection = async (io: Server) => {
 
   io.on("connection", async (socket: Socket) => {
     console.log(`${socket.id} connected`);
-
+    //emitt connectted to socket
+    socket.on("connection", async()=>{
+      io.to(socket?.id).emit("connection_status",true)
+    })
     // Set the user as active
     await UsersModel.update({ active: true }, { where: { id: socket.id } });
-
+    socket.on('getNotification',async()=>{
+        //get notification 
+        const allNotification = await NotificationModel.findAll({
+          where:{
+            userId:socket?.id
+          }
+        })
+        if(allNotification){
+          io.to(socket?.id).emit("newNotification",allNotification)
+        }
+       
+    })
     // Emit all users
     socket.on('getUser', async () => {
       io.emit('user', await getUsersWithMessages(socket.id));
@@ -53,7 +68,7 @@ const handleSocketConnection = async (io: Server) => {
     socket.on('get_previous_messages', async (data: any) => {
       try {
         const sentMessages = await getMessages(data.senderId, data.receiverId);
-        const receivedMessages = await getMessages(data.receiverId, data.senderId);
+        const receivedMessages = await getMessages(data.receiverId, data?.senderId);
 
         socket.emit('previous_messages', [...sentMessages, ...receivedMessages]);
       } catch (error) {
@@ -65,11 +80,14 @@ const handleSocketConnection = async (io: Server) => {
     socket.on('privateMessage', async (data: any) => {
       try {
         const message = await saveAndBroadcastMessage(data);
-        
+        let createNewNotification = await createNotification("NEW_MESSAGE",data.receiverId,data.senderId)
+        console.log("createNewNotification",createNewNotification)
+        io.to(socket?.id).emit("newNotification",[createNewNotification])
+  
         io.to(data.senderId).emit('privateMessage', message);
         io.to(data.receiverId).emit('privateMessage', message);
       } catch (error) {
-        console.error(error);
+        console.error(error);     
       }
     });
     socket.on('openChat',async(data)=>{
@@ -96,7 +114,9 @@ const handleSocketConnection = async (io: Server) => {
 
     socket.on("disconnect", async () => {
       console.log(`${socket.id} disconnected`);
-
+      socket.on("connection", async()=>{
+        io.to(socket?.id).emit("connection_status",false)
+      })
       // Set the user as inactive
       await UsersModel.update(
         { active: false, lastseen: new Date() },
@@ -144,7 +164,9 @@ const saveAndBroadcastMessage = async (data: any) => {
     receiverId: data.receiverId,
     senderId: data.senderId,
     sent: true,
-    seen:receiver?.dataValues?.active
+    seen:receiver?.dataValues?.active,
+    createdAt:data.createdAt
+
   });
 
   return message;

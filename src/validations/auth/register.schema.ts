@@ -5,7 +5,7 @@ export const registrationSchema = Joi.object({
   phoneNumber: Joi.string().min(10).max(20).required(),
   email: Joi.string().email().required(),
   password: Joi.string().required(),
-  level: Joi.string().optional(),
+  level: Joi.string().allow(null).optional(),
   confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
     "any.only": "Passwords do not match",
   }),

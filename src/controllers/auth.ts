@@ -86,14 +86,15 @@ export class AuthController {
       const uploadImage = await uploadSingleMedia(
         newCreateUser,
         "PROFILE_IMAGE",
-        "https://img.icons8.com/doodle/48/user-male-circle.png",
+        `https://api.dicebear.com/7.x/initials/svg?seed=${fullName}/svg?randomizeIds=false`,
+       
       );
       //send mail notification
       try {
         const mail = sendUserMail(email, fullName, otp);
-        console.log(res);
+        console.log("res from mail",res);
       } catch (err) {
-        console.log(err);
+        console.log("err from mail",err);
       }
 
       return res.json({

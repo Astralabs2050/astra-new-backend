@@ -13,7 +13,7 @@ import bodyParser = require("body-parser");
 dotenv.config();
 
 const app = express();
-app.use(bodyParser.json({ limit: '50mb' })); // Set the limit to an appropriate value
+app.use(bodyParser.json({ limit: '100mb' })); // Set the limit to an appropriate value
 // ENABLE CORS
 const allowedOrigins = [
   "https://elect-app.vercel.app",
