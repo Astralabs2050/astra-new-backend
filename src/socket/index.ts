@@ -52,7 +52,8 @@ const handleSocketConnection = async (io: Server) => {
         const allNotification = await NotificationModel.findAll({
           where:{
             userId:socket?.id
-          }
+          },
+          order: [["createdAt", "DESC"]], 
         })
         if(allNotification){
           io.to(socket?.id).emit("newNotification",allNotification)
