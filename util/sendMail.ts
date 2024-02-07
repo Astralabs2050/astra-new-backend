@@ -62,8 +62,7 @@ export const sendUserMail = async (mail: any, name: any, otp: any) => {
 
   try {
     const response = await axios.post(apiUrl, data, { headers });
-    console.log(response.data);
   } catch (error: any) {
-    console.error(error.message || error);
+    console.error("error from mail",error.message || error);
   }
 };

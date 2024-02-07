@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-
+const appUrl = process.env.APP_URL;
 export const successHTML = `
 <html>
 <head>
@@ -33,7 +33,7 @@ export const successHTML = `
                 align-items:center;
                 justify-content:center;
                 border-radius:15px
-            " href="http://localhost:3000/auth/login">Login</a>
+            " href="${appUrl}/auth/login">Login</a>
         </div>
     </div>
 </div>

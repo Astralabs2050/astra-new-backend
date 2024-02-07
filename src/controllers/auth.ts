@@ -91,8 +91,7 @@ export class AuthController {
       );
       //send mail notification
       try {
-        const mail = sendUserMail(email, fullName, otp);
-        console.log("res from mail",res);
+       await sendUserMail(email, fullName, otp);
       } catch (err) {
         console.log("err from mail",err);
       }
