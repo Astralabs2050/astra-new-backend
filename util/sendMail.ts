@@ -47,7 +47,7 @@ export const sendUserMail = async (mail: any, name: any, otp: any) => {
     <body>
       <p>Dear ${name},</p>
       <p>Click the following link to verify your email: <a href="${hostUrl}/auth/verify/${otp}">${hostUrl}/auth/verify/${otp}</a></p>
-      <p>Best regards,<br>Lawblaze at DateConnect</p>
+      <p>Best regards,<br>Lawblaze at NIEEE</p>
     </body>
     </html>
     
