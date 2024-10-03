@@ -1,4 +1,4 @@
-import { MediaModel,  UsersModel } from "../src/model";
+import { MediaModel, UsersModel } from "../src/model";
 
 export const uploadSingleMedia = async (
   user: any,
@@ -78,4 +78,3 @@ export const getSingleUploadedMedia = async (user: any, mediaType: string) => {
     throw new Error("No such media found");
   }
 };
-

@@ -1,68 +1,44 @@
-import axios from "axios";
+import nodemailer from "nodemailer";
 
-export const sendUserMail = async (mail: any, name: any, otp: any) => {
-  const apiUrl = "https://api.brevo.com/v3/smtp/email";
-  const apiKey = process.env.API_KEY; // Replace with your actual API key
-  const hostUrl = process.env.HOST_URL;
-
-  const data = {
-    sender: {
-      name: "lawblaze",
-      email: process.env.MAIL_SENDER,
-    },
-    to: [
-      {
-        email: mail,
-        name: name,
-      },
-    ],
-    subject: "Verify your Mail",
-    htmlContent: `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Email Verification</title>
-      <style>
-        body {
-          font-family: 'Arial', sans-serif;
-          line-height: 1.6;
-          margin: 0;
-          padding: 20px;
-          background-color: #f4f4f4;
-        }
-    
-        p {
-          margin-bottom: 15px;
-        }
-    
-        a {
-          color: #007bff;
-          text-decoration: none;
-          font-weight: bold;
-        }
-      </style>
-    </head>
-    <body>
-      <p>Dear ${name},</p>
-      <p>Click the following link to verify your email: <a href="${hostUrl}/auth/verify/${otp}">${hostUrl}/auth/verify/${otp}</a></p>
-      <p>Best regards,<br>Lawblaze at NIEEE</p>
-    </body>
-    </html>
-    
-    `,
-  };
-
-  const headers = {
-    accept: "application/json",
-    "api-key": apiKey,
-    "content-type": "application/json",
-  };
-
-  try {
-    const response = await axios.post(apiUrl, data, { headers });
-  } catch (error: any) {
-    console.error("error from mail",error.message || error);
-  }
+// Function to send an email
+async function sendEmail(
+  receiverEmail: string,
+  subject: string,
+  message: string,
+) {
+  // Create a transporter object using SMTP settings
+  var smtpConfig = {
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
 };
+  const transporter = nodemailer.createTransport(smtpConfig);
+
+  // Setup email data
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: receiverEmail,
+    subject: subject,
+    html: message, // Use 'html' to send HTML content
+  };
+
+  // Send the email
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully!");
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+}
+export default sendEmail;
+// Example usage
+// Example usage
+// const receiverEmail = "lawblaze4@gmail.com"; // Replace with actual recipient email
+// const subject = "Thank you for trying out Astra!";
+// const message = `<b>Test message</b>`; // HTML content
+
+// sendEmail(receiverEmail, subject, message).catch(console.error);

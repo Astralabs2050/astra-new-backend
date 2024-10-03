@@ -11,8 +11,8 @@ import {
 import { v4 as uuidv4 } from "uuid";
 
 enum userType {
-  student = "student",
-  staff = "staff",
+  brand = "brand",
+  creator = "creator",
 }
 
 @Table({ timestamps: true, tableName: "users" })
@@ -39,29 +39,22 @@ export class UsersModel extends Model {
   @Column(DataType.BOOLEAN)
   active?: boolean;
 
+  @AllowNull(true)
   @Column(DataType.DATE)
   lastseen?: Date;
 
+  @AllowNull(true)
   @Column(DataType.STRING)
   otp?: string;
-
-  @Column(DataType.STRING)
-  phoneNumber?: string;
-
-  @Column(DataType.STRING)
-  fullName?: string;
-
-  @Column(DataType.STRING)
-  level?: string;
 
   @Default(false)
   @Column(DataType.BOOLEAN)
   isAdmin?: boolean;
 
+  @AllowNull(true)
   @Column(DataType.ENUM(...Object.values(userType)))
-  userType!: userType;
+  userType?: userType;
 
-  // Override toJSON method to remove sensitive info
   toJSON() {
     const values = { ...this.get() } as any;
     delete values.password;

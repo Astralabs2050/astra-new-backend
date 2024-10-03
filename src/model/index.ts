@@ -1,5 +1,15 @@
 import { UsersModel } from "./user.model";
 import { MediaModel } from "./media.model";
+import { BrandModel } from "./brand.model";
+import { CreatorModel } from "./creator.model";
+import { ProjectModel } from "./project.model";
+import { WorkExperienceModel } from "./workExperience.model";
 
-
-export { UsersModel,  MediaModel, };
+export {
+  UsersModel,
+  MediaModel,
+  BrandModel,
+  CreatorModel,
+  ProjectModel,
+  WorkExperienceModel,
+};

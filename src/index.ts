@@ -7,13 +7,14 @@ import * as dotenv from "dotenv";
 import portfinder from "portfinder";
 import bodyParser = require("body-parser");
 
+
 dotenv.config();
 
 const app = express();
-app.use(bodyParser.json({ limit: '100mb' })); // Set the limit to an appropriate value
+app.use(bodyParser.json({ limit: "100mb" })); // Set the limit to an appropriate value
 // ENABLE CORS
 const allowedOrigins = [
-  "http://localhost:3000"
+  "http://localhost:3000",
   // Add more origins as needed
 ];
 
@@ -42,7 +43,7 @@ async function startServer() {
   app.use(express.json());
   // Database connection
   initDB();
- 
+
   // Routes
   app.use(routes);
 

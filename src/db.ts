@@ -4,7 +4,10 @@ import { Dialect } from "sequelize/types/sequelize";
 import {
   UsersModel,
   MediaModel,
-
+  BrandModel,
+  CreatorModel,
+  ProjectModel,
+  WorkExperienceModel,
 } from "./model";
 import { dbConfig } from "../common/utility";
 
@@ -16,7 +19,14 @@ const sequelizeOptions: any = {
   dialectOptions: {
     ssl: { require: true, rejectUnauthorized: false },
   },
-  models: [UsersModel, MediaModel],
+  models: [
+    UsersModel,
+    MediaModel,
+    BrandModel,
+    CreatorModel,
+    ProjectModel,
+    WorkExperienceModel,
+  ],
 };
 
 const sequelize = new Sequelize(
