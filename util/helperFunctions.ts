@@ -1,4 +1,4 @@
-import { MediaModel, NotificationModel, UsersModel } from "../src/model";
+import { MediaModel,  UsersModel } from "../src/model";
 
 export const uploadSingleMedia = async (
   user: any,
@@ -79,34 +79,3 @@ export const getSingleUploadedMedia = async (user: any, mediaType: string) => {
   }
 };
 
-export const sendPrivateMessage = (
-  sender_id: string,
-  receiver_id: string,
-  message: string,
-  file: any,
-) => {};
-
-type NotificationType = "NEW_MESSAGE" 
-export const createNotification  = async(type:NotificationType,userId:string,senderId:string)=>{
-try{
-  //get nottifaction sender 
-  const Sender = await UsersModel.findOne({
-    where:{
-      id:senderId
-    }
-  })
-  if(!Sender){
-    throw new Error('sender not found')
-  }
-  
-  const notification = await NotificationModel.create({
-    notificationType:type,
-    userId:userId,
-    notificationContent:`new message from ${Sender?.dataValues?.fullName}`
-  })
-  return notification
-}catch(err:any){
-  console.log(err,'eerrrrr')
-  throw new Error(err)
-}
-}

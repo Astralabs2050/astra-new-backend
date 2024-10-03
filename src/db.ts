@@ -3,11 +3,8 @@ import { Sequelize } from "sequelize-typescript";
 import { Dialect } from "sequelize/types/sequelize";
 import {
   UsersModel,
-  StaffMessageModel,
   MediaModel,
-  MessageModel,
-  ArticleModel,
-  NotificationModel
+
 } from "./model";
 import { dbConfig } from "../common/utility";
 
@@ -19,7 +16,7 @@ const sequelizeOptions: any = {
   dialectOptions: {
     ssl: { require: true, rejectUnauthorized: false },
   },
-  models: [UsersModel, StaffMessageModel, MediaModel, MessageModel,ArticleModel,NotificationModel],
+  models: [UsersModel, MediaModel],
 };
 
 const sequelize = new Sequelize(

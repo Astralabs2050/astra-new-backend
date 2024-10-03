@@ -1,12 +1,9 @@
 import express from "express";
 import { createServer } from "http";
-import { Server } from "socket.io";
 import { initDB } from "./db";
 import routes from "./routes";
 import cors from "cors";
 import * as dotenv from "dotenv";
-import { errors } from "celebrate";
-import { handleSocketConnection } from "./socket";
 import portfinder from "portfinder";
 import bodyParser = require("body-parser");
 
@@ -16,8 +13,6 @@ const app = express();
 app.use(bodyParser.json({ limit: '100mb' })); // Set the limit to an appropriate value
 // ENABLE CORS
 const allowedOrigins = [
-  "https://elect-app.vercel.app",
-  "https://elect-app-lawsondaniel.vercel.app",
   "http://localhost:3000"
   // Add more origins as needed
 ];
@@ -28,8 +23,6 @@ app.use(
     credentials: true,
   }),
 );
-
-const secretKey: any = process.env.JWT_SECRET;
 
 async function startServer() {
   let port = 3001;
@@ -44,21 +37,12 @@ async function startServer() {
   }
 
   const httpServer = createServer(app);
-  const io = new Server(httpServer, {
-    cors: {
-      origin: allowedOrigins, // Replace with the origin of
-    },
-  });
 
-  // Middleware to handle validation errors
-  app.use(errors());
   // PARSE JSON
   app.use(express.json());
   // Database connection
   initDB();
-  // Socket.IO handling
-  handleSocketConnection(io);
-
+ 
   // Routes
   app.use(routes);
 
