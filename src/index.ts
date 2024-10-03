@@ -7,7 +7,6 @@ import * as dotenv from "dotenv";
 import portfinder from "portfinder";
 import bodyParser = require("body-parser");
 
-
 dotenv.config();
 
 const app = express();

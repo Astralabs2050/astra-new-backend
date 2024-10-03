@@ -33,9 +33,10 @@ export class AuthService {
 
     const newCreateUser = await UsersModel.create(newUser);
     await uploadSingleMedia(
-      newCreateUser,
+      newCreateUser?.id,
       "PROFILE_IMAGE",
       `https://api.dicebear.com/7.x/initials/svg?seed=${username}/svg?randomizeIds=false`,
+      "user",
     );
 
     try {
@@ -81,8 +82,9 @@ export class AuthService {
           expiresIn: expirationTime,
         });
         const profileImg = await getSingleUploadedMedia(
-          userExists,
+          userExists?.id,
           "PROFILE_IMAGE",
+          "user",
         );
         return {
           status: true,
@@ -111,20 +113,22 @@ export class AuthService {
   }
 
   public async resendOtp(email: string) {
-    const userToBeVerified:any = await UsersModel.findOne({
+    const userToBeVerified: any = await UsersModel.findOne({
       where: { email, verified: false },
     });
 
     if (userToBeVerified) {
       const otp = uuidv4();
       await userToBeVerified.update({ otp });
-     
-      await sendEmail(email, "OTP", `Dear ${userToBeVerified?.fullName} your otp is  ${otp}`);
+
+      await sendEmail(
+        email,
+        "OTP",
+        `Dear ${userToBeVerified?.fullName} your otp is  ${otp}`,
+      );
       return { status: true, message: `Verification link sent to ${email}` };
     } else {
       return { status: false, message: "Email already verified or invalid" };
     }
   }
 }
-
-

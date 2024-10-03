@@ -1,24 +1,22 @@
 import { Request, Response } from "express";
-import {AuthService} from "../service/auth.service";
+import { AuthService } from "../service/auth.service";
 
 export class AuthController {
-  private authService: AuthService
+  private authService: AuthService;
 
   constructor() {
     this.authService = new AuthService();
   }
 
-  public registerBrand = async(req: Request, res: Response)=>{
-    try{
-
-    }catch(error:any){
+  public registerBrand = async (req: Request, res: Response) => {
+    try {
+    } catch (error: any) {
       return res.status(400).json({
         status: false,
         message: `An error occurred: ${error?.message || error}`,
-      })
+      });
     }
-  }
-
+  };
 
   // public register = async (req: Request, res: Response) => {
   //   try {
@@ -78,5 +76,3 @@ export class AuthController {
   //   }
   // };
 }
-
-

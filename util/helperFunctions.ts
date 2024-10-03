@@ -1,50 +1,56 @@
-import { MediaModel, UsersModel } from "../src/model";
+import { MediaModel, UsersModel, ProjectModel } from "../src/model";
 
+// Function to upload a single media file associated with a user or project
 export const uploadSingleMedia = async (
-  user: any,
+  entityId: string,
   mediaType: string,
   link: string,
+  entityType: "user" | "project", // Specify the entity type
 ) => {
   try {
-    // Check if the user exists
-    const userExists = await UsersModel.findOne({
-      where: {
-        id: user?.id,
-      },
-    });
+    let entityExists;
 
-    if (!userExists) {
-      throw new Error(`User with id ${user?.id} does not exist`);
+    // Check if the entity exists based on the entity type
+    if (entityType === "user") {
+      entityExists = await UsersModel.findOne({ where: { id: entityId } });
+    } else if (entityType === "project") {
+      entityExists = await ProjectModel.findOne({ where: { id: entityId } });
+    } else {
+      throw new Error("Invalid entity type specified");
     }
 
-    // Check if the user has uploaded that document, then update it if needed
+    if (!entityExists) {
+      throw new Error(`Entity with id ${entityId} does not exist`);
+    }
+
+    // Check if the media file already exists for the entity and media type
     const existingMedia = await MediaModel.findOne({
       where: {
-        userId: userExists.id,
+        entityId, // Using the same ID for user or project
         mediaType,
+        entityType, // Added to distinguish between user and project media
       },
     });
 
     if (existingMedia) {
-      // If the media file already exists for the user and media type, update the link
+      // Update the existing media link
       existingMedia.link = link;
       await existingMedia.save();
     } else {
-      // If the media file doesn't exist, create a new one
+      // Create a new media entry
       await MediaModel.create({
         link,
         mediaType,
-        userId: userExists.id,
+        entityId, // Reference the same ID for either user or project
+        entityType, // Indicate whether it's user or project media
       });
     }
 
-    // Provide feedback or return a success message if needed
     return {
       success: true,
       message: "File uploaded successfully",
     };
   } catch (err: any) {
-    // Handle errors and return an appropriate response
     return {
       success: false,
       message: err.message || "An error occurred while uploading the file",
@@ -52,29 +58,49 @@ export const uploadSingleMedia = async (
   }
 };
 
-export const getSingleUploadedMedia = async (user: any, mediaType: string) => {
-  // Check if the user exists
-  const userExists = await UsersModel.findOne({
-    where: {
-      id: user?.id,
-    },
-  });
+// Function to retrieve uploaded media associated with a user or project
+export const getSingleUploadedMedia = async (
+  entityId: string,
+  mediaType: string,
+  entityType: "user" | "project",
+) => {
+  try {
+    let entityExists;
 
-  if (!userExists) {
-    throw new Error(`User with id ${user?.id} does not exist`);
-  }
+    // Check if the entity exists
+    if (entityType === "user") {
+      entityExists = await UsersModel.findOne({ where: { id: entityId } });
+    } else if (entityType === "project") {
+      entityExists = await ProjectModel.findOne({ where: { id: entityId } });
+    } else {
+      throw new Error("Invalid entity type specified");
+    }
 
-  // Check if the user has uploaded that document, then update it if needed
-  const existingMedia = await MediaModel.findOne({
-    where: {
-      userId: userExists.id,
-      mediaType,
-    },
-  });
-  if (existingMedia) {
-    return existingMedia?.link;
-    console.log(existingMedia);
-  } else {
-    throw new Error("No such media found");
+    if (!entityExists) {
+      throw new Error(`Entity with id ${entityId} does not exist`);
+    }
+
+    // Fetch the existing media for the entity and media type
+    const existingMedia = await MediaModel.findOne({
+      where: {
+        entityId,
+        mediaType,
+        entityType, // Check the entity type to retrieve the correct media
+      },
+    });
+
+    if (existingMedia) {
+      return {
+        success: true,
+        link: existingMedia.link,
+      };
+    } else {
+      throw new Error("No such media found");
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || "An error occurred while fetching the media",
+    };
   }
 };

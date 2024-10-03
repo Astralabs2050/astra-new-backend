@@ -38,8 +38,9 @@ class User {
       const userData = [];
       for (const user of users) {
         const profileImg = await getSingleUploadedMedia(
-          user.dataValues,
+          user.dataValues?.id,
           "PROFILE_IMAGE",
+          "user",
         );
         const userDataItem = {
           ...user.dataValues,
@@ -66,7 +67,12 @@ class User {
     try {
       const { user, link } = req.body;
       const mediaType = "PROFILE_IMAGE";
-      const uploadImage = await uploadSingleMedia(user, mediaType, link);
+      const uploadImage = await uploadSingleMedia(
+        user?.id,
+        mediaType,
+        link,
+        "user",
+      );
       if (uploadImage?.success) {
         return res.json({
           status: true,
@@ -95,8 +101,9 @@ class User {
       });
       if (userExists) {
         const profileImg = await getSingleUploadedMedia(
-          userExists,
+          userExists?.id,
           "PROFILE_IMAGE",
+          "user",
         );
         return res.json({
           status: true,
