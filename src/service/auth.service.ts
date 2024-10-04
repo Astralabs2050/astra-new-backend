@@ -7,6 +7,23 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import sendEmail from "../../util/sendMail";
+import { BrandModel } from "../model";
+import { sequelize } from "../db";
+
+
+interface Brand {
+  id: string;            // UUID for the user
+  verified: boolean;     // Indicates if the user is verified
+  active: boolean;       // Indicates if the user is active
+  isAdmin: boolean;      // Indicates if the user has admin privileges
+  email: string;         // User's email address
+  updatedAt: string;     // Timestamp for when the user was last updated
+  createdAt: string;     // Timestamp for when the user was created
+  username: string;      // User's username
+  userId: string;        // UUID of the user 
+  password?: string | null;
+  otp?: string | null; 
+}
 
 export class AuthService {
   public async register(userData: any) {
@@ -131,4 +148,78 @@ export class AuthService {
       return { status: false, message: "Email already verified or invalid" };
     }
   }
+  public async registerBrandService(data: any) {
+    const transaction = await sequelize.transaction();
+    
+    try {
+      const { email, password, username } = data;
+  
+      // Check if the user already exists
+      const userWithEmailExists = await UsersModel.findOne({ where: { email }, transaction });
+  
+      if (userWithEmailExists) {
+        return {
+          status: false,
+          message: `User with email ${email} already exists`,
+        };
+      }
+  
+      const salt: string = await bcrypt.genSalt(15);
+      const hashPassword: string = await bcrypt.hash(password, salt);
+      const otp = uuidv4().slice(0,5);
+  
+      const newUser = {
+        email,
+        password: hashPassword,
+        otp,
+      };
+  
+      // Create user with transaction
+      const newCreateUser = await UsersModel.create(newUser, { transaction });
+  
+      const newBrand = {
+        username,
+        userId: newCreateUser.id,
+      };
+  
+      // Create brand with transaction
+      const newCreatedBrand = await BrandModel.create(newBrand, { transaction });
+      
+      //send otp main
+      await sendEmail(email, 
+        "Your OTP for Brand Verification", 
+        `
+        <h1>Welcome, ${username}!</h1>
+        <p>Your OTP is: <strong>${otp}</strong></p>
+        <p>Please verify your brands email.</p>
+      `);
+      // Commit the transaction
+      await transaction.commit();
+      const brandData:Brand ={
+        ...newCreateUser.dataValues, ...newCreatedBrand.dataValues 
+      }
+      brandData["password"] = null 
+      brandData["otp"] = null
+      delete brandData["password"]
+      delete brandData["otp"]
+      return {
+        message: "Brand created successfully",
+        status: true,
+        data:brandData,
+      };
+      
+    } catch (error: any) {
+      // Rollback the transaction in case of error
+      await transaction.rollback();
+      return {
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      };
+    }
+  }
+
+
+
+
+
 }
