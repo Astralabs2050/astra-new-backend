@@ -48,7 +48,7 @@ async function startServer() {
 
   httpServer.listen(port, () => {
     console.log(`Server is running on port ${port}`);
-    console.log(`connect http://localhost:${port}`)
+    console.log(`connect http://localhost:${port}`);
   });
 }
 

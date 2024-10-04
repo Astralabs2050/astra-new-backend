@@ -10,8 +10,8 @@ export class AuthController {
 
   public registerBrand = async (req: Request, res: Response) => {
     try {
-      const response = await this.authService.registerBrandService(req.body)
-      return res.json(response)
+      const response = await this.authService.registerBrandService(req.body);
+      return res.json(response);
     } catch (error: any) {
       return res.status(400).json({
         status: false,
