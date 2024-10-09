@@ -1,0 +1,25 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: self-hosted  # Use the self-hosted runner
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: |
+          yarn install --ignore-engines  # or any other dependency manager
+
+      - name: Run Code
+        run: |
+          npx ts-node src/index.ts  # or any test command
