@@ -9,11 +9,6 @@ authRouter.post(
   "/register/brand",
   authcontroller.registerBrand.bind(authcontroller),
 );
-// authRouter.post("/login", authController.login);
 
-// authRouter.get("/verify/:otp", authController.verifyOtp);
-// authRouter.get("/resend-otp/:email", authController.resendOtp);
-
-// authRouter.post("/forget-password");
 
 export default authRouter;
