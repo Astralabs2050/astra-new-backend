@@ -23,27 +23,25 @@ jobs:
         shell: powershell
         run: |
           # Start the Node.js process and redirect output to a log file
-          npx ts-node src/index.ts | Tee-Object -FilePath output.log
-          
-      - name: Wait for the Node.js app to start
-        run: Start-Sleep -Seconds 2  # Additiona
+          $process = Start-Process -File "npx" -ArgumentList "ts-node src/index.ts" -RedirectStandardOutput "output.log" -RedirectStandardError "error.log" -PassThru
+          Start-Sleep -Seconds 1  # Increased wait time to ensure server is ready
 
-      - name: Check Connection to the Node.js API
+          if (-not $process.HasExited) {
+            Write-Host "Node.js application is running. PID: $($process.Id)"
+            Write-Host "Server is running on an unknown port (dynamic)."
+          }
+
+    
+      - name: Test the Node.js API
         shell: powershell
         run: |
           # Extract the port number from the output
           $portLine = Get-Content output.log | Select-String -Pattern "Server is running on port"
           $port = $portLine -replace '.*port ', '' -replace '\D', '' # Ensure only the port number is left
           Write-Host "Testing connection on port: $port"
-          
-          # Check if the server is reachable using curl
-          $response = curl -s -o /dev/null -w "%{http_code}" http://localhost:$port
-          if ($response -ne 200) {
-            Write-Error "Failed to connect. HTTP Status Code: $response"
-            exit 1
-          } else {
-            Write-Host "Successfully connected to the server on port $port."
-          }
+          # Use the extracted port to make a request
+          $response = Invoke-WebRequest -Uri "http://localhost:$port"
+          Write-Host "Response: $($response.Content)"
 
       - name: Read Application Logs
         run: |
