@@ -25,7 +25,7 @@ jobs:
           echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
           echo "DBNAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
           echo "DBUSER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DBPASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
           echo "DBPORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
           echo "EMAIL_USER=${{ secrets.EMAIL_USER }}" >> $GITHUB_ENV
           echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> $GITHUB_ENV
