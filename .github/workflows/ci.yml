@@ -24,14 +24,16 @@ jobs:
         run: |
           # Start the Node.js process and redirect output to a log file
           $process = Start-Process -File "npx" -ArgumentList "ts-node src/index.ts" -RedirectStandardOutput "output.log" -RedirectStandardError "error.log" -PassThru
-          Start-Sleep -Seconds 1  # Increased wait time to ensure server is ready
+          Start-Sleep -Seconds 10  # Increased wait time to ensure server is ready
 
           if (-not $process.HasExited) {
             Write-Host "Node.js application is running. PID: $($process.Id)"
             Write-Host "Server is running on an unknown port (dynamic)."
           }
 
-    
+      - name: Wait for the Node.js app to start
+        run: Start-Sleep -Seconds 5  # Additional wait
+
       - name: Test the Node.js API
         shell: powershell
         run: |
