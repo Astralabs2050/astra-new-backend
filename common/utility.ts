@@ -7,4 +7,4 @@ export const dbConfig: any = {
   dbhost: process.env.DB_HOST,
   dbuser: process.env.DB_USER,
   dbpassword: process.env.DB_PASSWORD,
-};
+}
