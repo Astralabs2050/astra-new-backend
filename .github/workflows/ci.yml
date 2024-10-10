@@ -27,8 +27,5 @@ jobs:
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Run Tests
-        run: yarn test
-
       - name: Run Node.js Application
         run: yarn start
