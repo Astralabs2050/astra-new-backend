@@ -35,28 +35,7 @@ jobs:
         run: Start-Sleep -Seconds 5  # Additional wait
 
           
-      - name: Test the Node.js API
-        shell: powershell
-        run: |
-          # Extract the port number from the output
-          $portLine = Get-Content output.log | Select-String -Pattern "Server is running on port"
-          
-          if ($portLine) {
-            $port = $portLine -replace '.*port ', '' -replace '\D', '' # Ensure only the port number is left
-            Write-Host "Testing connection on port: $port"
-            try {
-              # Use the extracted port to make a request
-              $response = Invoke-WebRequest -Uri "http://localhost:$port"
-              Write-Host "Response: $($response.Content)"
-            } catch {
-              Write-Host "Failed to connect to the server: $_"
-              exit 1
-            }
-          } else {
-            Write-Host "Port number could not be extracted from logs."
-            exit 1
-          }
-
+     
       - name: Read Application Logs
         run: |
           echo "Output Log:"

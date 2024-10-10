@@ -27,14 +27,14 @@ app.use(
 async function startServer() {
   let port = 3001;
 
-  try {
-    // Try to get an available port dynamically, starting from 3001
-    port = await portfinder.getPortPromise({ port: port });
-  } catch (error: any) {
-    console.error("Error finding an available port:", error.message);
-    // If an error occurs (e.g., no available ports), use a different port
-    port = 3002;
-  }
+  // try {
+  //   // Try to get an available port dynamically, starting from 3001
+  //   port = await portfinder.getPortPromise({ port: port });
+  // } catch (error: any) {
+  //   console.error("Error finding an available port:", error.message);
+  //   // If an error occurs (e.g., no available ports), use a different port
+  //   port = 3002;
+  // }
 
   const httpServer = createServer(app);
 
