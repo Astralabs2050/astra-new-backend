@@ -51,7 +51,7 @@ jobs:
           }
 
       - name: Run Code
-        shell: pwsh
+        shell: powershell
         run: |
           # Start the Node.js process
           $process = Start-Process -File "npx" -ArgumentList "ts-node src/index.ts" -PassThru
