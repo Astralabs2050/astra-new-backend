@@ -1,70 +1,44 @@
-name: CI/CD Pipeline
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
   build:
-    runs-on: self-hosted  # Use the self-hosted runner
+    runs-on: self-hosted
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
 
       - name: Install Dependencies
-        run: |
-          yarn install --ignore-engines  # or any other dependency manager
+        run: yarn install --ignore-engines
 
-      - name: Set up environment variables
-        run: |
-          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
-          echo "DBNAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
-          echo "DBUSER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
-          echo "DBPASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-          echo "DBPORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
-          echo "EMAIL_USER=${{ secrets.EMAIL_USER }}" >> $GITHUB_ENV
-          echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> $GITHUB_ENV
-
-      - name: Verify environment variables
+      - name: Run Node.js Application
         shell: powershell
         run: |
-          $missingVars = @()
-
-          if (-not "${{ secrets.DB_HOST }}") { $missingVars += "DB_HOST" }
-          if (-not "${{ secrets.DB_NAME }}") { $missingVars += "DBNAME" }
-          if (-not "${{ secrets.DB_USER }}") { $missingVars += "DBUSER" }
-          if (-not "${{ secrets.DB_PASSWORD }}") { $missingVars += "DBPASSWORD" }
-          if (-not "${{ secrets.DB_PORT }}") { $missingVars += "DBPORT" }
-          if (-not "${{ secrets.EMAIL_USER }}") { $missingVars += "EMAIL_USER" }
-          if (-not "${{ secrets.EMAIL_PASS }}") { $missingVars += "EMAIL_PASS" }
-
-          if ($missingVars.Count -gt 0) {
-            Write-Error "Missing environment variables: $($missingVars -join ', ')"
-            exit 1
-          } else {
-            Write-Host "All environment variables are set."
-          }
-
-      - name: Run Code
-        shell: powershell
-        run: |
-          # Start the Node.js process
-          $process = Start-Process -File "npx" -ArgumentList "ts-node src/index.ts" -PassThru
+          # Start the Node.js process and redirect output to a log file
+          $process = Start-Process -File "npx" -ArgumentList "ts-node src/index.ts" -RedirectStandardOutput "output.log" -RedirectStandardError "error.log" -PassThru
+          Start-Sleep -Seconds 5  # Wait for the server to start
           
-          # Optionally wait for the process to finish if needed
-          Start-Sleep -Seconds 5  # Wait for a short period, adjust as necessary
-
-          # If you want to check if the process is still running
           if (-not $process.HasExited) {
-            Write-Host "Process is still running. PID: $($process.Id)"
-          } else {
-            Write-Host "Process has exited."
+            Write-Host "Node.js application is running. PID: $($process.Id)"
+            Write-Host "Server is running on an unknown port (dynamic)."
           }
 
-          # Uncomment the following line if you need to wait for the process to finish
-          # $process.WaitForExit()
+      - name: Wait for the Node.js app to start
+        run: Start-Sleep -Seconds 10  # Wait to ensure the server is ready
+
+      - name: Test the Node.js API
+        shell: powershell
+        run: |
+          # Since the port is dynamic, log the output of the app to get the port
+          Get-Content output.log | Select-String -Pattern "Server is running on port"
+          # Extract the port number from the output
+          $portLine = Get-Content output.log | Select-String -Pattern "Server is running on port"
+          $port = $portLine -replace '.*port ', ''
+          # Use the extracted port to make a request
+          $response = Invoke-WebRequest -Uri "http://localhost:$port"
+          Write-Host "Response: $($response.Content)"
+
+      - name: Read Application Logs
+        run: |
+          echo "Output Log:"
+          Get-Content output.log
+          echo "Error Log:"
+          Get-Content error.log
