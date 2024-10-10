@@ -32,7 +32,7 @@ const sequelizeOptions: any = {
 const sequelize = new Sequelize(
   dbConfig.dbname || "astra",
   dbConfig.dbuser || "root",
-  dbConfig.dbpassword,
+  dbConfig.dbpassword || "12345678",
   sequelizeOptions,
 );
 // sequelize.addModels([ParkOwner, IndividualParkOwner, CorporateParkOwner]);
