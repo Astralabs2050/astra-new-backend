@@ -29,7 +29,17 @@ jobs:
           echo "DBPORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
           echo "EMAIL_USER=${{ secrets.EMAIL_USER }}" >> $GITHUB_ENV
           echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> $GITHUB_ENV
-      
+
+      - name: Verify environment variables
+        run: |
+          # Check for the required environment variables and fail if any are missing
+          if [ -z "$DB_HOST" ] || [ -z "$DBNAME" ] || [ -z "$DBUSER" ] || [ -z "$DBPASSWORD" ] || [ -z "$DBPORT" ] || [ -z "$EMAIL_USER" ] || [ -z "$EMAIL_PASS" ]; then
+            echo "Error: One or more environment variables are missing"
+            exit 1
+          else
+            echo "All environment variables are set."
+          fi
+
       - name: Run Code
         run: |
           npx ts-node src/index.ts  # or any test command
