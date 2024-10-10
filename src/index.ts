@@ -25,7 +25,7 @@ app.use(
 );
 
 async function startServer() {
-  let port = 3001;
+
 
   // try {
   //   // Try to get an available port dynamically, starting from 3001
@@ -45,10 +45,10 @@ async function startServer() {
 
   // Routes
   app.use(routes);
-
+  const PORT = process.env.PORT || 3000;
   httpServer.listen(3003,'0.0.0.0', () => {
-    console.log(`Server is running on port ${port}`);
-    console.log(`connect http://localhost:${port}`);
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`connect http://localhost:${PORT}`);
   });
 }
 
