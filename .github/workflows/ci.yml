@@ -1,46 +1,29 @@
-name: DEV CI/CD Pipeline
+name: CI/CD with Self-Hosted Runner
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - main  # Or your branch name
 
 jobs:
-  build:
-    runs-on: self-hosted
+  deploy:
+    runs-on: self-hosted  # This specifies the self-hosted runner
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Install Dependencies
-        run: yarn install --ignore-engines
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'  # Use your Node.js version
 
-      - name: Run Node.js Application
-        shell: powershell
-        run: |
-          # Start the Node.js process and redirect output to a log file
-          $process = Start-Process -File "npx" -ArgumentList "ts-node src/index.ts" -RedirectStandardOutput "output.log" -RedirectStandardError "error.log" -PassThru
-          Start-Sleep -Seconds 10  # Wait for the server to start
+    - name: Install dependencies
+      run: npm install
 
-          if (-not $process.HasExited) {
-            Write-Host "Node.js application is running. PID: $($process.Id)"
-          } else {
-            Write-Error "Failed to start the Node.js application."
-            exit 1
-          }
-
-      - name: Wait for the Node.js app to start
-        run: |
-          Start-Sleep -Seconds 5  # Additional wait
-          
-     
-      - name: Read Application Logs
-        run: |
-          echo "Output Log:"
-          Get-Content output.log
-          echo "Error Log:"
-          Get-Content error.log
+    - name: Deploy the application
+      run: |
+        pm2 stop all || true
+        git pull origin main
+        npm install
+        pm2 start index.js --name "astra_backend"
