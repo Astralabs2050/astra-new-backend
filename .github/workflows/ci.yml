@@ -37,16 +37,14 @@ jobs:
           $port = $portLine -replace '.*port ', '' -replace '\D', '' # Ensure only the port number is left
           Write-Host "Testing connection on port: $port"
           
-          # Check if the server is reachable
-          $connectionTest = Test-NetConnection -ComputerName localhost -Port $port
-          if (-not $connectionTest.TcpTestSucceeded) {
-            Write-Error "Unable to connect to the server on port $port"
+          # Check if the server is reachable using curl
+          $response = curl -s -o /dev/null -w "%{http_code}" http://localhost:$port
+          if ($response -ne 200) {
+            Write-Error "Failed to connect. HTTP Status Code: $response"
             exit 1
+          } else {
+            Write-Host "Successfully connected to the server on port $port."
           }
-          
-          # Use the extracted port to make a request
-          $response = Invoke-WebRequest -Uri "http://localhost:$port"
-          Write-Host "Response: $($response.Content)"
 
       - name: Read Application Logs
         run: |
