@@ -30,8 +30,8 @@ const sequelizeOptions: any = {
 };
 
 const sequelize = new Sequelize(
-  dbConfig.dbname,
-  dbConfig.dbuser,
+  dbConfig.dbname || "astra",
+  dbConfig.dbuser || "root",
   dbConfig.dbpassword,
   sequelizeOptions,
 );
