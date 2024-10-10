@@ -21,9 +21,14 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Deploy the application
+    - name: Stop running app
       run: |
         pm2 stop all || true
+      shell: bash
+
+    - name: Deploy the application
+      run: |
         git pull origin main
         npm install
-        pm2 start index.js --name "astra_backend"
+        pm2 start index.js --name "app-name"
+      shell: bash
