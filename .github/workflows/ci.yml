@@ -31,7 +31,7 @@ jobs:
           echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> $GITHUB_ENV
 
       - name: Verify environment variables
-        shell: pwsh
+        shell: powershell
         run: |
           $missingVars = @()
 
