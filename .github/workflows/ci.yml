@@ -25,10 +25,10 @@ jobs:
       run: |
         pm2 stop all || true
       shell: bash
-
     - name: Deploy the application
       run: |
         git pull origin main
         npm install
-        pm2 start index.js --name "app-name"
+        pm2 stop all || true
+        pm2 start npm --name "app-name" -- start
       shell: bash
