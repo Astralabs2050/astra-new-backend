@@ -24,10 +24,9 @@ jobs:
         run: |
           # Start the Node.js process and redirect output to a log file
           npx ts-node src/index.ts | Tee-Object -FilePath output.log
-          Start-Sleep -Seconds 10  # Increased wait time to ensure server is ready
-
+          
       - name: Wait for the Node.js app to start
-        run: Start-Sleep -Seconds 10  # Additional wait
+        run: Start-Sleep -Seconds 2  # Additiona
 
       - name: Check Connection to the Node.js API
         shell: powershell
