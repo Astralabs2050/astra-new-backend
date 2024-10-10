@@ -34,7 +34,8 @@ jobs:
       - name: Wait for the Node.js app to start
         run: Start-Sleep -Seconds 5  # Additional wait
 
-           - name: Test the Node.js API
+          
+      - name: Test the Node.js API
         shell: powershell
         run: |
           # Extract the port number from the output
