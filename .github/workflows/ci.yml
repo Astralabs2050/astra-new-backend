@@ -31,14 +31,24 @@ jobs:
           echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> $GITHUB_ENV
 
       - name: Verify environment variables
+        shell: pwsh
         run: |
-          # Check for the required environment variables and fail if any are missing
-          if [ -z "$DB_HOST" ] || [ -z "$DBNAME" ] || [ -z "$DBUSER" ] || [ -z "$DBPASSWORD" ] || [ -z "$DBPORT" ] || [ -z "$EMAIL_USER" ] || [ -z "$EMAIL_PASS" ]; then
-            echo "Error: One or more environment variables are missing"
+          $missingVars = @()
+
+          if (-not $env:DB_HOST) { $missingVars += "DB_HOST" }
+          if (-not $env:DBNAME) { $missingVars += "DBNAME" }
+          if (-not $env:DBUSER) { $missingVars += "DBUSER" }
+          if (-not $env:DBPASSWORD) { $missingVars += "DBPASSWORD" }
+          if (-not $env:DBPORT) { $missingVars += "DBPORT" }
+          if (-not $env:EMAIL_USER) { $missingVars += "EMAIL_USER" }
+          if (-not $env:EMAIL_PASS) { $missingVars += "EMAIL_PASS" }
+
+          if ($missingVars.Count -gt 0) {
+            Write-Error "Missing environment variables: $($missingVars -join ', ')"
             exit 1
-          else
-            echo "All environment variables are set."
-          fi
+          } else {
+            Write-Host "All environment variables are set."
+          }
 
       - name: Run Code
         run: |
