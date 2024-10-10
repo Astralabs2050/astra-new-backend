@@ -51,5 +51,8 @@ jobs:
           }
 
       - name: Run Code
-        run: |
-          npx ts-node src/index.ts  # or any test command
+    shell: pwsh
+    run: |
+      Start-Process -File "npx" -ArgumentList "ts-node src/index.ts" -PassThru | Out-Null
+      # Optionally wait for the process to finish if needed
+      # Start-Sleep -Seconds 5  # Give it some time before proceeding
