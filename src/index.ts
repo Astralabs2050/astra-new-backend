@@ -46,7 +46,7 @@ async function startServer() {
   // Routes
   app.use(routes);
   const PORT = process.env.PORT || 3000;
-  httpServer.listen(3003,'0.0.0.0', () => {
+  httpServer.listen(3003, () => {
     console.log(`Server is running on port ${PORT}`);
     console.log(`connect http://localhost:${PORT}`);
   });
