@@ -53,6 +53,18 @@ jobs:
       - name: Run Code
         shell: pwsh
         run: |
-          Start-Process -File "npx" -ArgumentList "ts-node src/index.ts" -PassThru | Out-Null
+          # Start the Node.js process
+          $process = Start-Process -File "npx" -ArgumentList "ts-node src/index.ts" -PassThru
+          
           # Optionally wait for the process to finish if needed
-         # Start-Sleep -Seconds 5  # Give it some time before proceeding
+          Start-Sleep -Seconds 5  # Wait for a short period, adjust as necessary
+
+          # If you want to check if the process is still running
+          if (-not $process.HasExited) {
+            Write-Host "Process is still running. PID: $($process.Id)"
+          } else {
+            Write-Host "Process has exited."
+          }
+
+          # Uncomment the following line if you need to wait for the process to finish
+          # $process.WaitForExit()
