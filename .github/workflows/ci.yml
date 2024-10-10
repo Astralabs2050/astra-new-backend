@@ -21,18 +21,14 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Install node-windows
-      run: npm install -g node-windows
-
     - name: Stop running app
       run: |
-        node-windows stop backend_main || true
+        pm2 stop all || true
       shell: bash
-
     - name: Deploy the application
       run: |
         git pull origin main
         npm install
-        node-windows stop backend_main || true
-        node-windows start backend_main
+        pm2 stop all || true
+        pm2 start src/index.ts --name "backend_main" --interpreter ts-node
       shell: bash
