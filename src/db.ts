@@ -28,7 +28,7 @@ const sequelizeOptions: any = {
     WorkExperienceModel,
   ],
 };
-
+console.log("testing",dbConfig.dbname)
 const sequelize = new Sequelize(
   dbConfig.dbname || "astra",
   dbConfig.dbuser || "root",
