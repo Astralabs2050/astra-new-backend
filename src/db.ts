@@ -28,12 +28,11 @@ const sequelizeOptions: any = {
     WorkExperienceModel,
   ],
 };
-console.log("testing1",dbConfig.dbname)
-console.log("testing2",process.env.DB_NAME)
+
 const sequelize = new Sequelize(
-  dbConfig.dbname || "astra",
-  dbConfig.dbuser || "root",
-  dbConfig.dbpassword || "12345678",
+  dbConfig.dbname ,
+  dbConfig.dbuser ,
+  dbConfig.dbpassword,
   sequelizeOptions,
 );
 // sequelize.addModels([ParkOwner, IndividualParkOwner, CorporateParkOwner]);
