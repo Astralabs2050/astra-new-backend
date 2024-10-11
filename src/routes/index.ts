@@ -9,6 +9,6 @@ routes.use("/auth", authRouter);
 routes.use("/user", isAuthenticated, userRouter);
 
 routes.get("/", (req, res) => {
-  res.send("working ci/cd");
+  res.send("working now");
 });
 export default routes;
