@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
@@ -21,14 +21,9 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Stop running app
-      run: |
-        pm2 stop all || true
-      shell: bash
     - name: Deploy the application
       run: |
         git pull origin main
         npm install
-        pm2 stop all || true
-        pm2 start ecosystem.config.js
+        pm2 reload ecosystem.config.js --update-env
       shell: bash
