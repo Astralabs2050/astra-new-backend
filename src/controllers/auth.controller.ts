@@ -32,6 +32,40 @@ export class AuthController {
     }
     
   }
+ public verifyOtp = async (req: Request, res: Response) => {
+  const {otp,email} = req?.body
+  
+    if (otp && email) {
+      try {
+        const result = await this.authService.verifyOtp(otp,email);
+        return res.json(result);
+      } catch (err) {
+        return res.json({
+          status: false,
+          message: `An error occurred: ${err}`,
+        });
+      }
+    } else {
+      return res.json({ status: false, message: "No OTP provided" });
+    }
+  };
+
+  public resendOtp = async (req: Request, res: Response) => {
+    const {email} = req?.body
+    if (email) {
+      try {
+        const result = await this.authService.resendOtp(email);
+        return res.json(result);
+      } catch (err) {
+        return res.json({
+          status: false,
+          message: `An error occurred: ${err}`,
+        });
+      }
+    } else {
+      return res.json({ status: false, message: "Enter a valid email" });
+    }
+  };
 
   // public register = async (req: Request, res: Response) => {
   //   try {
@@ -57,37 +91,5 @@ export class AuthController {
   //   }
   // };
 
-  // public verifyOtp = async (req: Request, res: Response) => {
-  //   const otp = req.params?.otp;
-  //   if (otp) {
-  //     try {
-  //       const result = await this.authService.verifyOtp(otp);
-  //       return res.json(result);
-  //     } catch (err) {
-  //       return res.json({
-  //         status: false,
-  //         message: `An error occurred: ${err}`,
-  //       });
-  //     }
-  //   } else {
-  //     return res.json({ status: false, message: "No OTP provided" });
-  //   }
-  // };
-
-  // public resendOtp = async (req: Request, res: Response) => {
-  //   const email = req.params?.email;
-  //   if (email) {
-  //     try {
-  //       const result = await this.authService.resendOtp(email);
-  //       return res.json(result);
-  //     } catch (err) {
-  //       return res.json({
-  //         status: false,
-  //         message: `An error occurred: ${err}`,
-  //       });
-  //     }
-  //   } else {
-  //     return res.json({ status: false, message: "Enter a valid email" });
-  //   }
-  // };
+ 
 }

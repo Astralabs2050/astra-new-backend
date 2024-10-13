@@ -38,7 +38,7 @@ export class AuthService {
 
     const salt: string = await bcrypt.genSalt(15);
     const hashPassword: string = await bcrypt.hash(password, salt);
-    const otp = uuidv4();
+    const otp = uuidv4().substring(0, 4);
 
     const newUser = {
       email,
@@ -115,9 +115,11 @@ export class AuthService {
     }
   }
 
-  public async verifyOtp(otp: string) {
+  public async verifyOtp(otp: string,email: string) {
     const userToBeVerified = await UsersModel.findOne({
-      where: { otp, verified: false },
+      where: { 
+        email,
+        otp, verified: false },
     });
 
     if (userToBeVerified) {
@@ -134,15 +136,10 @@ export class AuthService {
     });
 
     if (userToBeVerified) {
-      const otp = uuidv4();
+      const otp = uuidv4().substring(0, 4);
       await userToBeVerified.update({ otp });
-
-      await sendEmail(
-        email,
-        "OTP",
-        `Dear ${userToBeVerified?.fullName} your otp is  ${otp}`,
-      );
-      return { status: true, message: `Verification link sent to ${email}` };
+      await sendEmail(email, "Resend OTP", `Hello your otp is  ${otp}`);
+      return { status: true, message: `OTP sent to ${email}` };
     } else {
       return { status: false, message: "Email already verified or invalid" };
     }

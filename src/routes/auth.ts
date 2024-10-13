@@ -14,5 +14,13 @@ authRouter.post("/register/creator",
   authcontroller.registerCreator.bind(authcontroller),
 )
 
+authRouter.post("/otp-verification",
+  authcontroller.verifyOtp.bind(authcontroller)
+)
+
+authRouter.post("/resend-otp",
+  authcontroller.resendOtp.bind(authcontroller)
+)
+
 
 export default authRouter;
