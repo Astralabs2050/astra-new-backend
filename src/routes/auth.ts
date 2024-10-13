@@ -10,5 +10,9 @@ authRouter.post(
   authcontroller.registerBrand.bind(authcontroller),
 );
 
+authRouter.post("/register/creator",
+  authcontroller.registerCreator.bind(authcontroller),
+)
+
 
 export default authRouter;

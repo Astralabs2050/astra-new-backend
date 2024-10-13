@@ -5,58 +5,52 @@ export const uploadSingleMedia = async (
   entityId: string,
   mediaType: string,
   link: string,
-  entityType: "user" | "project", // Specify the entity type
+  entityType: "user" | "project",
+  transaction?:any
 ) => {
   try {
     let entityExists;
 
-    // Check if the entity exists based on the entity type
-    if (entityType === "user") {
-      entityExists = await UsersModel.findOne({ where: { id: entityId } });
-    } else if (entityType === "project") {
+    // Check if the entity exists based on entityType
+    if (entityType === "project") {
       entityExists = await ProjectModel.findOne({ where: { id: entityId } });
+    } else if (entityType === "user") {
+      entityExists = await UsersModel.findOne({
+         where: { id: entityId }, 
+        transaction });
     } else {
       throw new Error("Invalid entity type specified");
     }
 
+    // If the entity does not exist, log a warning but continue with media creation
     if (!entityExists) {
-      throw new Error(`Entity with id ${entityId} does not exist`);
+      console.warn(`Warning: ${entityType.charAt(0).toUpperCase() + entityType.slice(1)} with id ${entityId} does not exist. Media will still be created.`);
     }
 
-    // Check if the media file already exists for the entity and media type
-    const existingMedia = await MediaModel.findOne({
-      where: {
-        entityId, // Using the same ID for user or project
-        mediaType,
-        entityType, // Added to distinguish between user and project media
-      },
-    });
+    // Create new media record regardless of entity existence
+    const mediaData = {
+      link,
+      mediaType,
+      ...(entityType === "project" ? { projectId: entityId } : { userId: entityId }), // Set either projectId or userId
+    };
 
-    if (existingMedia) {
-      // Update the existing media link
-      existingMedia.link = link;
-      await existingMedia.save();
-    } else {
-      // Create a new media entry
-      await MediaModel.create({
-        link,
-        mediaType,
-        entityId, // Reference the same ID for either user or project
-        entityType, // Indicate whether it's user or project media
-      });
-    }
+    // Create the media record
+    const newMedia = await MediaModel.create(mediaData,{transaction});
 
     return {
       success: true,
-      message: "File uploaded successfully",
+      message: "profileImage: Media uploaded successfully",
+      media: newMedia // Optionally return the created media
     };
   } catch (err: any) {
     return {
       success: false,
-      message: err.message || "An error occurred while uploading the file",
+      message: "profileImage: " + (err.message || "An error occurred while uploading the media"),
     };
   }
 };
+
+
 
 // Function to retrieve uploaded media associated with a user or project
 export const getSingleUploadedMedia = async (

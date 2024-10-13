@@ -7,7 +7,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import sendEmail from "../../util/sendMail";
-import { BrandModel } from "../model";
+import { BrandModel, CreatorModel, ProjectModel, WorkExperienceModel } from "../model";
 import { sequelize } from "../db";
 
 interface Brand {
@@ -147,6 +147,118 @@ export class AuthService {
       return { status: false, message: "Email already verified or invalid" };
     }
   }
+  public async registerCreatorService(data: any) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { email, password, fullName, profileImage } = data;
+  
+      // Check if the user already exists
+      const userWithEmailExists = await UsersModel.findOne({
+        where: { email },
+        transaction,
+      });
+  
+      if (userWithEmailExists) {
+        return {
+          status: false,
+          message: `User with email ${email} already exists`,
+        };
+      }
+  
+      // Hash the password
+      const salt: string = await bcrypt.genSalt(15);
+      const hashPassword: string = await bcrypt.hash(password, salt);
+      const otp = uuidv4().slice(0, 4);
+  
+      const newUser = {
+        email,
+        password: hashPassword,
+        otp,
+      };
+  
+      // Create user within transaction
+      const newCreateUser = await UsersModel.create(newUser, { transaction });
+  
+      // Validate and process category and skills if they are arrays
+      const category = Array.isArray(data?.category) ? data.category : [];
+      const skills = Array.isArray(data?.skills) ? data.skills : [];
+  
+      // Create the creator profile
+      const creator = {
+        userId: newCreateUser.id,
+        fullName,
+        location: data?.location,
+        category,  // using validated category array
+        skills,    // using validated skills array
+        creatorType: data?.creatorType,
+      };
+      const newCreator = await CreatorModel.create(creator, { transaction });
+  
+      // Create work experience if available
+      if (Array.isArray(data?.work) && data.work.length > 0) {
+        const workExperiences = data.work.map((work: any) => ({
+          creatorId: newCreator.id,
+          title: work.title,
+          description: work.description,
+          companyName: work.companyName,
+          startDate: work.startDate,
+          endDate: work.endDate,
+        }));
+        await WorkExperienceModel.bulkCreate(workExperiences, { transaction });
+      }
+  
+      if (Array.isArray(data?.projects) && data.projects.length > 0) {
+        const projectExperiences = data.projects.map((project: any) => ({
+          creatorId: newCreator.id,
+          title: project.title,
+          projectDescription: project.projectDescription,
+          tags: project.tags,
+        }));
+      
+        const newProjects = await ProjectModel.bulkCreate(projectExperiences, { transaction });
+      
+        // Upload project images (if available)
+        await Promise.all(
+          newProjects.map(async (project: any, index: number) => {
+            const productImage = await uploadSingleMedia(
+              project.id, 
+              "PROJECT_IMAGE", 
+              data.projects[index]?.image, 
+              "project",
+              transaction
+            );
+            console.log("productImage", productImage);
+          })
+        );
+      }
+  
+      // Commit the transaction
+      await transaction.commit();
+  
+      // Upload profile picture after transaction is successful
+      if (profileImage) {
+        await uploadSingleMedia(newCreateUser.id, "PROFILE_PICTURE", profileImage, "user");
+       
+      }
+  
+      return {
+        status: true,
+        message: "Creator profile successfully created",
+      };
+  
+    } catch (error: any) {
+      // Rollback transaction on error
+      await transaction.rollback();
+      console.error("Error registering creator:", error);
+      return {
+        status: false,
+        message: "Error registering creator",
+        error: error.message,
+      };
+    }
+  }
+  
+  
   public async registerBrandService(data: any) {
     const transaction = await sequelize.transaction();
 

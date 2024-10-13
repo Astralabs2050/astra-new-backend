@@ -20,6 +20,19 @@ export class AuthController {
     }
   };
 
+  public registerCreator = async (req: Request, res: Response)=>{
+    try{
+      const response = await this.authService.registerCreatorService(req.body);
+      return res.json(response);
+    } catch (error: any){
+      return res.status(400).json({
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      });
+    }
+    
+  }
+
   // public register = async (req: Request, res: Response) => {
   //   try {
   //     const result = await this.authService.register(req.body);

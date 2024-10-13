@@ -6,12 +6,15 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
+  Default,
 } from "sequelize-typescript";
 import { CreatorModel as Creator } from "./creator.model"; // Adjust the path as necessary
+import { v4 as uuidv4 } from "uuid";
 
 @Table({ timestamps: true, tableName: "work_experiences" })
 export class WorkExperienceModel extends Model {
   @PrimaryKey
+  @Default(uuidv4)
   @Column(DataType.UUID)
   id!: string;
 

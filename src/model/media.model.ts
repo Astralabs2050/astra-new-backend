@@ -12,6 +12,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { UsersModel as User } from "./user.model"; // Assuming you have a User model
 import { ProjectModel } from "./project.model"; // Adjust the path as necessary
+import { CreatorModel } from "./creator.model";
 
 @Table({ timestamps: true, tableName: "media" })
 export class MediaModel extends Model {
