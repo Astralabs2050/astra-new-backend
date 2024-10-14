@@ -20,24 +20,23 @@ export class AuthController {
     }
   };
 
-  public registerCreator = async (req: Request, res: Response)=>{
-    try{
+  public registerCreator = async (req: Request, res: Response) => {
+    try {
       const response = await this.authService.registerCreatorService(req.body);
       return res.json(response);
-    } catch (error: any){
+    } catch (error: any) {
       return res.status(400).json({
         status: false,
         message: `An error occurred: ${error?.message || error}`,
       });
     }
-    
-  }
- public verifyOtp = async (req: Request, res: Response) => {
-  const {otp,email} = req?.body
-  
+  };
+  public verifyOtp = async (req: Request, res: Response) => {
+    const { otp, email } = req?.body;
+
     if (otp && email) {
       try {
-        const result = await this.authService.verifyOtp(otp,email);
+        const result = await this.authService.verifyOtp(otp, email);
         return res.json(result);
       } catch (err) {
         return res.json({
@@ -51,7 +50,7 @@ export class AuthController {
   };
 
   public resendOtp = async (req: Request, res: Response) => {
-    const {email} = req?.body
+    const { email } = req?.body;
     if (email) {
       try {
         const result = await this.authService.resendOtp(email);
@@ -67,29 +66,27 @@ export class AuthController {
     }
   };
 
-  // public register = async (req: Request, res: Response) => {
-  //   try {
-  //     const result = await this.authService.register(req.body);
-  //     return res.json(result);
-  //   } catch (error: any) {
-  //     return res.json({
-  //       status: false,
-  //       message: `An error occurred: ${error?.message || error}`,
-  //     });
-  //   }
-  // };
+  public login = async (req: Request, res: Response) => {
+    try {
+      const result = await this.authService.login(req.body);
+      return res.json(result);
+    } catch (error: any) {
+      return res.json({
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      });
+    }
+  };
 
-  // public login = async (req: Request, res: Response) => {
-  //   try {
-  //     const result = await this.authService.login(req.body);
-  //     return res.json(result);
-  //   } catch (error: any) {
-  //     return res.json({
-  //       status: false,
-  //       message: `An error occurred: ${error?.message || error}`,
-  //     });
-  //   }
-  // };
-
- 
+  public getAuthUser = async (req: Request, res: Response) => {
+    try {
+      const { id } = (req as any)?.user;
+      const result = await this.authService.getAuthUser(id);
+    } catch (error: any) {
+      return {
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      };
+    }
+  };
 }

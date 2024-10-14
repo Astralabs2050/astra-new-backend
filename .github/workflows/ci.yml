@@ -3,36 +3,36 @@ name: CI/CD with Self-Hosted Runner
 on:
   push:
     branches:
-      - main  # Or your branch name
+      - main # Or your branch name
 
 jobs:
   deploy:
-    runs-on: self-hosted  # This specifies the self-hosted runner
+    runs-on: self-hosted # This specifies the self-hosted runner
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'  # Use your Node.js version
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16" # Use your Node.js version
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Deploy the application
-      env:
-        DB_NAME: ${{ secrets.DB_NAME }}
-        DB_PORT: ${{ secrets.DB_PORT }}
-        DB_HOST: ${{ secrets.DB_HOST }}
-        DB_USER: ${{ secrets.DB_USER }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        APP_URL: ${{ secrets.APP_URL }}
-        EMAIL_USER: ${{ secrets.EMAIL_USER }}
-        EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-      run: |
-        git pull origin main
-        npm install
-        pm2 reload ecosystem.config.js --update-env
-      shell: bash
+      - name: Deploy the application
+        env:
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          APP_URL: ${{ secrets.APP_URL }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+        run: |
+          git pull origin main
+          npm install
+          pm2 reload ecosystem.config.js --update-env
+        shell: bash

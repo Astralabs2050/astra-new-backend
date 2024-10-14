@@ -7,7 +7,12 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import sendEmail from "../../util/sendMail";
-import { BrandModel, CreatorModel, ProjectModel, WorkExperienceModel } from "../model";
+import {
+  BrandModel,
+  CreatorModel,
+  ProjectModel,
+  WorkExperienceModel,
+} from "../model";
 import { sequelize } from "../db";
 
 interface Brand {
@@ -65,26 +70,13 @@ export class AuthService {
   }
 
   public async login(credentials: any) {
-    const { phoneNumber, email, password, userType } = credentials;
+    const { email, password } = credentials;
 
-    if (!email && !phoneNumber) {
-      return { status: false, message: "Provide email or phone number" };
+    if (!email) {
+      return { status: false, message: "Provide email " };
     }
 
-    if (userType === "student") {
-      const emailPattern = /^(201[5-9]|20[2-9][0-9])en\d{4}@unijos\.edu\.ng$/;
-      if (!emailPattern.test(email)) {
-        return {
-          status: false,
-          message:
-            "Provide a valid university of Jos faculty of engineering email.",
-        };
-      }
-    }
-
-    let userExists = email
-      ? await UsersModel.findOne({ where: { email, userType } })
-      : await UsersModel.findOne({ where: { phoneNumber, userType } });
+    let userExists = await UsersModel.findOne({ where: { email } });
 
     if (userExists) {
       const doesPasswordMatch = await bcrypt.compare(
@@ -93,19 +85,17 @@ export class AuthService {
       );
       if (doesPasswordMatch) {
         const jwtSecret: any = process.env.JWT_SECRET;
+        console.log("jwtSecret", jwtSecret);
         const expirationTime = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
         const token = jwt.sign({ data: userExists }, jwtSecret, {
           expiresIn: expirationTime,
         });
-        const profileImg = await getSingleUploadedMedia(
-          userExists?.id,
-          "PROFILE_IMAGE",
-          "user",
-        );
+        delete userExists?.dataValues["password"];
+        delete userExists?.dataValues["otp"];
         return {
           status: true,
           message: "Login successful",
-          data: { ...userExists?.dataValues, token, profileImg },
+          data: { ...userExists?.dataValues, token },
         };
       } else {
         return { status: false, message: "Password does not match" };
@@ -115,11 +105,13 @@ export class AuthService {
     }
   }
 
-  public async verifyOtp(otp: string,email: string) {
+  public async verifyOtp(otp: string, email: string) {
     const userToBeVerified = await UsersModel.findOne({
-      where: { 
+      where: {
         email,
-        otp, verified: false },
+        otp,
+        verified: false,
+      },
     });
 
     if (userToBeVerified) {
@@ -148,49 +140,49 @@ export class AuthService {
     const transaction = await sequelize.transaction();
     try {
       const { email, password, fullName, profileImage } = data;
-  
+
       // Check if the user already exists
       const userWithEmailExists = await UsersModel.findOne({
         where: { email },
         transaction,
       });
-  
+
       if (userWithEmailExists) {
         return {
           status: false,
           message: `User with email ${email} already exists`,
         };
       }
-  
+
       // Hash the password
       const salt: string = await bcrypt.genSalt(15);
       const hashPassword: string = await bcrypt.hash(password, salt);
       const otp = uuidv4().slice(0, 4);
-  
+
       const newUser = {
         email,
         password: hashPassword,
         otp,
       };
-  
+
       // Create user within transaction
       const newCreateUser = await UsersModel.create(newUser, { transaction });
-  
+
       // Validate and process category and skills if they are arrays
       const category = Array.isArray(data?.category) ? data.category : [];
       const skills = Array.isArray(data?.skills) ? data.skills : [];
-  
+
       // Create the creator profile
       const creator = {
         userId: newCreateUser.id,
         fullName,
         location: data?.location,
-        category,  // using validated category array
-        skills,    // using validated skills array
+        category, // using validated category array
+        skills, // using validated skills array
         creatorType: data?.creatorType,
       };
       const newCreator = await CreatorModel.create(creator, { transaction });
-  
+
       // Create work experience if available
       if (Array.isArray(data?.work) && data.work.length > 0) {
         const workExperiences = data.work.map((work: any) => ({
@@ -203,7 +195,7 @@ export class AuthService {
         }));
         await WorkExperienceModel.bulkCreate(workExperiences, { transaction });
       }
-  
+
       if (Array.isArray(data?.projects) && data.projects.length > 0) {
         const projectExperiences = data.projects.map((project: any) => ({
           creatorId: newCreator.id,
@@ -211,38 +203,43 @@ export class AuthService {
           projectDescription: project.projectDescription,
           tags: project.tags,
         }));
-      
-        const newProjects = await ProjectModel.bulkCreate(projectExperiences, { transaction });
-      
+
+        const newProjects = await ProjectModel.bulkCreate(projectExperiences, {
+          transaction,
+        });
+
         // Upload project images (if available)
         await Promise.all(
           newProjects.map(async (project: any, index: number) => {
             const productImage = await uploadSingleMedia(
-              project.id, 
-              "PROJECT_IMAGE", 
-              data.projects[index]?.image, 
+              project.id,
+              "PROJECT_IMAGE",
+              data.projects[index]?.image,
               "project",
-              transaction
+              transaction,
             );
             console.log("productImage", productImage);
-          })
+          }),
         );
       }
-  
+
       // Commit the transaction
       await transaction.commit();
-  
+
       // Upload profile picture after transaction is successful
       if (profileImage) {
-        await uploadSingleMedia(newCreateUser.id, "PROFILE_PICTURE", profileImage, "user");
-       
+        await uploadSingleMedia(
+          newCreateUser.id,
+          "PROFILE_PICTURE",
+          profileImage,
+          "user",
+        );
       }
-  
+
       return {
         status: true,
         message: "Creator profile successfully created",
       };
-  
     } catch (error: any) {
       // Rollback transaction on error
       await transaction.rollback();
@@ -254,8 +251,7 @@ export class AuthService {
       };
     }
   }
-  
-  
+
   public async registerBrandService(data: any) {
     const transaction = await sequelize.transaction();
 
@@ -326,6 +322,31 @@ export class AuthService {
     } catch (error: any) {
       // Rollback the transaction in case of error
       await transaction.rollback();
+      return {
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      };
+    }
+  }
+  public async getAuthUser(id: string) {
+    try {
+      const user = await UsersModel.findOne({
+        where: {
+          id,
+        },
+      });
+      if (!user) {
+        return {
+          message: "User not found",
+          status: false,
+        };
+      }
+      return {
+        message: "user found",
+        data: user,
+        status: true,
+      };
+    } catch (error: any) {
       return {
         status: false,
         message: `An error occurred: ${error?.message || error}`,

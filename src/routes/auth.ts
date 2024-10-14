@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { AuthController } from "../controllers/auth.controller";
+import isAuthenticated from "../middleware/authorization";
 
 const authRouter = Router();
 const authcontroller = new AuthController();
@@ -10,17 +11,24 @@ authRouter.post(
   authcontroller.registerBrand.bind(authcontroller),
 );
 
-authRouter.post("/register/creator",
+authRouter.post("/login", authcontroller.login.bind(authcontroller));
+
+authRouter.post(
+  "/register/creator",
   authcontroller.registerCreator.bind(authcontroller),
-)
+);
 
-authRouter.post("/otp-verification",
-  authcontroller.verifyOtp.bind(authcontroller)
-)
+authRouter.post(
+  "/otp-verification",
+  authcontroller.verifyOtp.bind(authcontroller),
+);
 
-authRouter.post("/resend-otp",
-  authcontroller.resendOtp.bind(authcontroller)
-)
+authRouter.post("/resend-otp", authcontroller.resendOtp.bind(authcontroller));
 
+authRouter.post(
+  "/get-auth-user",
+  isAuthenticated,
+  authcontroller.getAuthUser.bind(authcontroller),
+);
 
 export default authRouter;

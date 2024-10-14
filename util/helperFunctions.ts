@@ -6,7 +6,7 @@ export const uploadSingleMedia = async (
   mediaType: string,
   link: string,
   entityType: "user" | "project",
-  transaction?:any
+  transaction?: any,
 ) => {
   try {
     let entityExists;
@@ -16,41 +16,48 @@ export const uploadSingleMedia = async (
       entityExists = await ProjectModel.findOne({ where: { id: entityId } });
     } else if (entityType === "user") {
       entityExists = await UsersModel.findOne({
-         where: { id: entityId }, 
-        transaction });
+        where: { id: entityId },
+        transaction,
+      });
     } else {
       throw new Error("Invalid entity type specified");
     }
 
     // If the entity does not exist, log a warning but continue with media creation
     if (!entityExists) {
-      console.warn(`Warning: ${entityType.charAt(0).toUpperCase() + entityType.slice(1)} with id ${entityId} does not exist. Media will still be created.`);
+      console.warn(
+        `Warning: ${
+          entityType.charAt(0).toUpperCase() + entityType.slice(1)
+        } with id ${entityId} does not exist. Media will still be created.`,
+      );
     }
 
     // Create new media record regardless of entity existence
     const mediaData = {
       link,
       mediaType,
-      ...(entityType === "project" ? { projectId: entityId } : { userId: entityId }), // Set either projectId or userId
+      ...(entityType === "project"
+        ? { projectId: entityId }
+        : { userId: entityId }), // Set either projectId or userId
     };
 
     // Create the media record
-    const newMedia = await MediaModel.create(mediaData,{transaction});
+    const newMedia = await MediaModel.create(mediaData, { transaction });
 
     return {
       success: true,
       message: "profileImage: Media uploaded successfully",
-      media: newMedia // Optionally return the created media
+      media: newMedia, // Optionally return the created media
     };
   } catch (err: any) {
     return {
       success: false,
-      message: "profileImage: " + (err.message || "An error occurred while uploading the media"),
+      message:
+        "profileImage: " +
+        (err.message || "An error occurred while uploading the media"),
     };
   }
 };
-
-
 
 // Function to retrieve uploaded media associated with a user or project
 export const getSingleUploadedMedia = async (
