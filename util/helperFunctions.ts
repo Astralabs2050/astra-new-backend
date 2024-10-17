@@ -5,8 +5,9 @@ export const uploadSingleMedia = async (
   entityId: string,
   mediaType: string,
   link: string,
-  entityType: "user" | "project",
+  entityType?: "user" | "project",
   transaction?: any,
+  model?:any
 ) => {
   try {
     let entityExists;
@@ -19,15 +20,13 @@ export const uploadSingleMedia = async (
         where: { id: entityId },
         transaction,
       });
-    } else {
-      throw new Error("Invalid entity type specified");
-    }
+    } 
 
     // If the entity does not exist, log a warning but continue with media creation
-    if (!entityExists) {
+    if (entityType && !entityExists) {
       console.warn(
         `Warning: ${
-          entityType.charAt(0).toUpperCase() + entityType.slice(1)
+          entityType?.charAt(0).toUpperCase() + entityType?.slice(1)
         } with id ${entityId} does not exist. Media will still be created.`,
       );
     }

@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import { UsersModel as User } from "./user.model"; // Assuming you have a User model
 import { ProjectModel } from "./project.model"; // Adjust the path as necessary
 import { CreatorModel } from "./creator.model";
+import { PieceModel } from "./piece.model";
 
 @Table({ timestamps: true, tableName: "media" })
 export class MediaModel extends Model {
@@ -27,27 +28,39 @@ export class MediaModel extends Model {
   @Column(DataType.STRING)
   mediaType!: string;
 
-  @AllowNull(true) // Allow null for optional association
+  @AllowNull(true) 
   @ForeignKey(() => User)
   @Column(DataType.UUID)
-  userId?: string; // Optional foreign key to User
+  userId?: string; 
 
   @BelongsTo(() => User, {
     foreignKey: "userId",
     as: "user",
-    onDelete: "CASCADE", // Change behavior if user is deleted
+    onDelete: "CASCADE", 
   })
-  user?: User; // Optional association
+  user?: User; 
 
-  @AllowNull(true) // Allow null for optional association
+  @AllowNull(true) 
   @ForeignKey(() => ProjectModel)
   @Column(DataType.UUID)
-  projectId?: string; // Optional foreign key to Project
+  projectId?: string; 
 
   @BelongsTo(() => ProjectModel, {
     foreignKey: "projectId",
     as: "project",
-    onDelete: "CASCADE", // Change behavior if project is deleted
+    onDelete: "CASCADE", 
   })
-  project?: ProjectModel; // Optional association
+  project?: ProjectModel; 
+
+  @AllowNull(true) 
+  @ForeignKey(() => PieceModel)
+  @Column(DataType.UUID)
+  pieceId?: string; 
+
+  @BelongsTo(() => ProjectModel, {
+    foreignKey: "pieceId",
+    as: "piece",
+    onDelete: "CASCADE", 
+  })
+  piece?: PieceModel; 
 }
