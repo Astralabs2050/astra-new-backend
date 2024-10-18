@@ -4,4 +4,8 @@ import isAuthenticated from "../middleware/authorization";
 
 const designRouter = Router()
 
-designRouter.post('/create-design',isAuthenticated)
+designRouter.post('/create-design',isAuthenticated, DesignController.createNewDesign)
+
+
+
+export default designRouter
