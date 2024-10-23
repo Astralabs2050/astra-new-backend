@@ -14,7 +14,7 @@ enum creatorType {
   graphicsDesigner = "graphicsDesigner",
   fashionIllustrator = "fashionIllustrator",
   techPackDesigner = "techPackDesigner",
-  manufacturer = "manufacturer" // Changed to `manufacturer`
+  manufacturer = "manufacturer", // Changed to `manufacturer`
 }
 
 @Table({ timestamps: true, tableName: "designs" })
@@ -29,6 +29,9 @@ export class DesignModel extends Model {
 
   @Column(DataType.INTEGER)
   pieceNumber!: number;
+
+  @Column(DataType.STRING)
+  prompt!: string;
 
   @Column(DataType.ENUM(...Object.values(creatorType)))
   creatorType?: creatorType;

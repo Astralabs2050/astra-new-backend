@@ -7,7 +7,7 @@ export const uploadSingleMedia = async (
   link: string,
   entityType?: "user" | "project",
   transaction?: any,
-  model?:any
+  model?: any,
 ) => {
   try {
     let entityExists;
@@ -20,7 +20,7 @@ export const uploadSingleMedia = async (
         where: { id: entityId },
         transaction,
       });
-    } 
+    }
 
     // If the entity does not exist, log a warning but continue with media creation
     if (entityType && !entityExists) {

@@ -28,39 +28,39 @@ export class MediaModel extends Model {
   @Column(DataType.STRING)
   mediaType!: string;
 
-  @AllowNull(true) 
+  @AllowNull(true)
   @ForeignKey(() => User)
   @Column(DataType.UUID)
-  userId?: string; 
+  userId?: string;
 
   @BelongsTo(() => User, {
     foreignKey: "userId",
     as: "user",
-    onDelete: "CASCADE", 
+    onDelete: "CASCADE",
   })
-  user?: User; 
+  user?: User;
 
-  @AllowNull(true) 
+  @AllowNull(true)
   @ForeignKey(() => ProjectModel)
   @Column(DataType.UUID)
-  projectId?: string; 
+  projectId?: string;
 
   @BelongsTo(() => ProjectModel, {
     foreignKey: "projectId",
     as: "project",
-    onDelete: "CASCADE", 
+    onDelete: "CASCADE",
   })
-  project?: ProjectModel; 
+  project?: ProjectModel;
 
-  @AllowNull(true) 
+  @AllowNull(true)
   @ForeignKey(() => PieceModel)
   @Column(DataType.UUID)
-  pieceId?: string; 
+  pieceId?: string;
 
   @BelongsTo(() => ProjectModel, {
     foreignKey: "pieceId",
     as: "piece",
-    onDelete: "CASCADE", 
+    onDelete: "CASCADE",
   })
-  piece?: PieceModel; 
+  piece?: PieceModel;
 }

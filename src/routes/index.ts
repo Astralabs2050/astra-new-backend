@@ -8,7 +8,7 @@ const routes = Router();
 
 routes.use("/auth", authRouter);
 routes.use("/user", isAuthenticated, userRouter);
-routes.use("/design",isAuthenticated, designRouter)
+routes.use("/design", isAuthenticated, designRouter);
 routes.get("/", (req, res) => {
   res.send("working now2");
 });

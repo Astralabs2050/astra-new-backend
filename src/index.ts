@@ -6,6 +6,8 @@ import cors from "cors";
 import * as dotenv from "dotenv";
 import portfinder from "portfinder";
 import bodyParser = require("body-parser");
+import { Server as SocketIOServer } from "socket.io"; // Import Socket.IO
+import { handleSocketConnection } from "./socket";
 
 dotenv.config();
 
@@ -35,6 +37,15 @@ async function startServer() {
   // }
 
   const httpServer = createServer(app);
+  // Create Socket.IO server
+  const io = new SocketIOServer(httpServer, {
+    cors: {
+      origin: allowedOrigins, // Allow frontend port
+    },
+  });
+
+  //handle socke connection
+  handleSocketConnection(io);
 
   // PARSE JSON
   app.use(express.json());
