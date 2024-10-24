@@ -10,10 +10,11 @@ import {
   Default,
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid";
-import { UsersModel as User } from "./user.model"; // Assuming you have a User model
-import { ProjectModel } from "./project.model"; // Adjust the path as necessary
+import { UsersModel as User } from "./user.model";
+import { ProjectModel } from "./project.model";
 import { CreatorModel } from "./creator.model";
 import { PieceModel } from "./piece.model";
+import { DesignModel } from "./design.model";
 
 @Table({ timestamps: true, tableName: "media" })
 export class MediaModel extends Model {
@@ -22,7 +23,7 @@ export class MediaModel extends Model {
   @Column(DataType.UUID)
   id!: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.TEXT)
   link!: string;
 
   @Column(DataType.STRING)
@@ -41,6 +42,18 @@ export class MediaModel extends Model {
   user?: User;
 
   @AllowNull(true)
+  @ForeignKey(() => DesignModel)
+  @Column(DataType.UUID)
+  designId?: string; // Updated to designId
+
+  @BelongsTo(() => DesignModel, {
+    foreignKey: "designId", // Updated foreign key
+    as: "design",
+    onDelete: "CASCADE",
+  })
+  design?: DesignModel;
+
+  @AllowNull(true)
   @ForeignKey(() => ProjectModel)
   @Column(DataType.UUID)
   projectId?: string;
@@ -57,7 +70,7 @@ export class MediaModel extends Model {
   @Column(DataType.UUID)
   pieceId?: string;
 
-  @BelongsTo(() => ProjectModel, {
+  @BelongsTo(() => PieceModel, {
     foreignKey: "pieceId",
     as: "piece",
     onDelete: "CASCADE",

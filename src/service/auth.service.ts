@@ -190,8 +190,10 @@ export class AuthService {
           title: work.title,
           description: work.description,
           companyName: work.companyName,
-          startDate: work.startDate,
-          endDate: work.endDate,
+          startyear: work.startyear,
+          startMonth: work.startMonth,
+          endyear: work.endyear,
+          endMonth: work.endMonth,
         }));
         await WorkExperienceModel.bulkCreate(workExperiences, { transaction });
       }

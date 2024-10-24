@@ -8,6 +8,8 @@ import {
   CreatorModel,
   ProjectModel,
   WorkExperienceModel,
+  DesignModel,
+  PieceModel
 } from "./model";
 import { dbConfig } from "../common/utility";
 
@@ -26,6 +28,8 @@ const sequelizeOptions: any = {
     CreatorModel,
     ProjectModel,
     WorkExperienceModel,
+    DesignModel,
+    PieceModel
   ],
 };
 

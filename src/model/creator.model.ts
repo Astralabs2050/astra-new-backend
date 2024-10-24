@@ -48,11 +48,11 @@ export class CreatorModel extends Model {
   location?: string;
 
   @AllowNull(true)
-  @Column(DataType.ARRAY(DataType.STRING)) // Corrected
+  @Column(DataType.JSON) // Use JSON type for multiple categories
   category?: string[];
 
   @AllowNull(true)
-  @Column(DataType.ARRAY(DataType.STRING)) // Corrected
+  @Column(DataType.JSON) // Use JSON type for multiple skills
   skills?: string[];
 
   @AllowNull(true)
@@ -68,7 +68,7 @@ export class CreatorModel extends Model {
 
   @HasMany(() => ProjectModel, {
     foreignKey: "creatorId",
-    as: "creator",
+    as: "projects", // Use consistent alias
     onDelete: "CASCADE", // Ensure cascade delete
   })
   projects!: ProjectModel[];

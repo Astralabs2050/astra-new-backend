@@ -9,12 +9,13 @@ import {
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid";
 import { PieceModel } from "./piece.model";
+import { MediaModel } from "./media.model";
 
 enum creatorType {
   graphicsDesigner = "graphicsDesigner",
   fashionIllustrator = "fashionIllustrator",
   techPackDesigner = "techPackDesigner",
-  manufacturer = "manufacturer", // Changed to `manufacturer`
+  manufacturer = "manufacturer",
 }
 
 @Table({ timestamps: true, tableName: "designs" })
@@ -25,10 +26,10 @@ export class DesignModel extends Model {
   id!: string;
 
   @Column(DataType.STRING)
-  outfitName!: string;
+  outfitName?: string;
 
   @Column(DataType.INTEGER)
-  pieceNumber!: number;
+  pieceNumber?: number;
 
   @Column(DataType.STRING)
   prompt!: string;
@@ -36,10 +37,16 @@ export class DesignModel extends Model {
   @Column(DataType.ENUM(...Object.values(creatorType)))
   creatorType?: creatorType;
 
-  @HasMany(() => PieceModel, {
-    foreignKey: "designId", // Changed from `creatorId` to `designId`
-    as: "pieces",
-    onDelete: "CASCADE", // Cascade delete
+  @HasMany(() => MediaModel, {
+    foreignKey: "designId", // Updated foreign key
+    as: "media",
   })
-  pieces!: PieceModel[]; // Changed to specific array type
+  images?: MediaModel[];
+
+  @HasMany(() => PieceModel, {
+    foreignKey: "designId",
+    as: "pieces",
+    onDelete: "CASCADE",
+  })
+  pieces?: PieceModel[];
 }

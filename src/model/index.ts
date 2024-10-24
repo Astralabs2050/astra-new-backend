@@ -4,6 +4,8 @@ import { BrandModel } from "./brand.model";
 import { CreatorModel } from "./creator.model";
 import { ProjectModel } from "./project.model";
 import { WorkExperienceModel } from "./workExperience.model";
+import { DesignModel } from "./design.model";
+import { PieceModel } from "./piece.model";
 
 export {
   UsersModel,
@@ -12,4 +14,6 @@ export {
   CreatorModel,
   ProjectModel,
   WorkExperienceModel,
+  DesignModel,
+  PieceModel
 };
