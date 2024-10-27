@@ -1,119 +1,96 @@
-import { ChatRoomModel, ChatMessageModel } from '/Users/chukwumaihenzerue/Desktop/astra-new-backend/src/model/index';
+import { ChatMessageModel } from '/Users/chukwumaihenzerue/Desktop/astra-new-backend/src/model/index';
 import { Op } from 'sequelize';
 
+// Track online users and their sockets
+const onlineUsers = new Map();
+// Track typing status
+const typingUsers = new Map();
+
 export const test = (socket: any) => {
-    // Join a chat room
-    socket.on("join_room", async (roomId: string) => {
+    // Add user to online users when they connect
+    onlineUsers.set(socket.user.id, socket);
+    
+    // Broadcast user's online status to their contacts
+    socket.broadcast.emit('user_status', {
+        userId: socket.user.id,
+        status: 'online'
+    });
+
+    // Initialize private chat with another user
+    socket.on("start_chat", async (receiverId: string) => {
         try {
-            socket.join(roomId);
-            
-            // Find or create room in database
-            let room = await ChatRoomModel.findOne({ where: { id: roomId } });
-            
-            if (!room) {
-                room = await ChatRoomModel.create({
-                    id: roomId,
-                    name: `Room ${roomId}`,
-                    participants: [socket.user.id]
-                });
-            } else {
-                // Update participants if user not already in room
-                if (!room.participants.includes(socket.user.id)) {
-                    room.participants = [...room.participants, socket.user.id];
-                    await room.save();
-                }
-            }
-
-            // Notify room participants
-            socket.to(roomId).emit("user_joined", {
-                userId: socket.user.id,
-                userName: socket.user.name
+            // Get chat history between these two users
+            const messages = await ChatMessageModel.findAll({
+                where: {
+                    [Op.or]: [
+                        { senderId: socket.user.id, receiverId: receiverId },
+                        { senderId: receiverId, receiverId: socket.user.id }
+                    ]
+                },
+                order: [['createdAt', 'ASC']]
             });
 
-            // Send last 50 messages to the joining user
-            const recentMessages = await ChatMessageModel.findAll({
-                where: { roomId },
-                order: [['createdAt', 'DESC']],
-                limit: 50
-            });
-
-            socket.emit("message_history", recentMessages.reverse());
-
-            console.log(`User ${socket.user.id} joined room ${roomId}`);
+            socket.emit("chat_history", messages);
         } catch (error) {
-            console.error("Error joining room:", error);
-            socket.emit("error", "Failed to join room");
+            console.error("Error starting chat:", error);
+            socket.emit("error", "Failed to start chat");
         }
     });
 
-    // Leave a chat room
-    socket.on("leave_room", async (roomId: string) => {
-        try {
-            socket.leave(roomId);
-            
-            // Update room participants in database
-            const room = await ChatRoomModel.findOne({ where: { id: roomId } });
-            if (room) {
-                room.participants = room.participants.filter(id => id !== socket.user.id);
-                await room.save();
-
-                // Delete room if empty
-                if (room.participants.length === 0) {
-                    await room.destroy();
-                }
-            }
-
-            // Notify room participants
-            socket.to(roomId).emit("user_left", {
-                userId: socket.user.id,
-                userName: socket.user.name
-            });
-
-            console.log(`User ${socket.user.id} left room ${roomId}`);
-        } catch (error) {
-            console.error("Error leaving room:", error);
-            socket.emit("error", "Failed to leave room");
-        }
-    });
-
-    // Send a message to a room
-    socket.on("send_message", async (message: { content: string, roomId: string }) => {
+    // Send a private message
+    socket.on("send_message", async (data: { content: string, receiverId: string }) => {
         try {
             // Validate message
-            if (!message.content?.trim()) {
+            if (!data.content?.trim()) {
                 throw new Error("Message content cannot be empty");
             }
 
-            // Check if room exists
-            const room = await ChatRoomModel.findOne({ where: { id: message.roomId } });
-            if (!room) {
-                throw new Error("Room not found");
-            }
+            // Generate temporary ID for optimistic UI
+            const tempId = Date.now().toString();
+
+            // Immediately emit to sender for optimistic UI
+            socket.emit("message_sent", {
+                id: tempId,
+                content: data.content,
+                senderId: socket.user.id,
+                senderName: socket.user.name,
+                receiverId: data.receiverId,
+                createdAt: new Date(),
+                delivered: false
+            });
 
             // Create message in database
             const newMessage = await ChatMessageModel.create({
-                roomId: message.roomId,
                 senderId: socket.user.id,
                 senderName: socket.user.name,
-                content: message.content
+                receiverId: data.receiverId,
+                content: data.content,
+                delivered: false,
+                readAt: null
             });
 
-            // Broadcast to room
-            socket.to(message.roomId).emit("new_message", {
-                id: newMessage.id,
-                roomId: message.roomId,
-                senderId: socket.user.id,
-                senderName: socket.user.name,
-                content: message.content,
-                createdAt: newMessage.createdAt
+            // Update sender with actual message ID
+            socket.emit("message_confirmed", {
+                tempId,
+                actualId: newMessage.id
             });
 
-            // Acknowledge message receipt
-            socket.emit("message_sent", {
-                success: true,
-                messageId: newMessage.id,
-                timestamp: newMessage.createdAt
-            });
+            // Send to receiver if they're online
+            const receiverSocket = onlineUsers.get(data.receiverId);
+            if (receiverSocket) {
+                receiverSocket.emit("new_message", {
+                    id: newMessage.id,
+                    content: data.content,
+                    senderId: socket.user.id,
+                    senderName: socket.user.name,
+                    receiverId: data.receiverId,
+                    createdAt: newMessage.createdAt
+                });
+
+                // Mark as delivered
+                newMessage.delivered = true;
+                await newMessage.save();
+            }
 
         } catch (error) {
             console.error("Error sending message:", error);
@@ -121,69 +98,88 @@ export const test = (socket: any) => {
         }
     });
 
-    // Get room messages
-    socket.on("get_messages", async (roomId: string, page = 1, limit = 50) => {
+    // Mark message as read
+    socket.on("mark_as_read", async (messageId: string) => {
         try {
-            const offset = (page - 1) * limit;
-            const messages = await ChatMessageModel.findAll({
-                where: { roomId },
-                order: [['createdAt', 'DESC']],
-                limit,
-                offset
-            });
+            const message = await ChatMessageModel.findByPk(messageId);
+            if (message && message.receiverId === socket.user.id) {
+                message.readAt = new Date();
+                await message.save();
 
-            socket.emit("room_messages", {
-                messages: messages.reverse(),
-                page,
-                limit
-            });
+                // Notify sender that message was read
+                const senderSocket = onlineUsers.get(message.senderId);
+                if (senderSocket) {
+                    senderSocket.emit("message_read", {
+                        messageId,
+                        readAt: message.readAt
+                    });
+                }
+            }
         } catch (error) {
-            console.error("Error fetching messages:", error);
-            socket.emit("error", "Failed to fetch messages");
+            console.error("Error marking message as read:", error);
         }
     });
 
-    // Get user's rooms
-    socket.on("get_rooms", async () => {
-        try {
-            const rooms = await ChatRoomModel.findAll({
-                where: {
-                    participants: {
-                        [Op.contains]: [socket.user.id]
-                    }
-                }
+    // Handle typing indicators
+    socket.on("typing_start", (receiverId: string) => {
+        // Clear existing timeout if any
+        if (typingUsers.has(socket.user.id)) {
+            clearTimeout(typingUsers.get(socket.user.id));
+        }
+
+        // Set new timeout to automatically clear typing status
+        const timeout = setTimeout(() => {
+            const receiverSocket = onlineUsers.get(receiverId);
+            if (receiverSocket) {
+                receiverSocket.emit("user_stopped_typing", {
+                    userId: socket.user.id
+                });
+            }
+            typingUsers.delete(socket.user.id);
+        }, 3000);
+
+        typingUsers.set(socket.user.id, timeout);
+
+        // Notify receiver
+        const receiverSocket = onlineUsers.get(receiverId);
+        if (receiverSocket) {
+            receiverSocket.emit("user_typing", {
+                userId: socket.user.id
             });
-            
-            socket.emit("rooms_list", rooms);
-        } catch (error) {
-            console.error("Error fetching rooms:", error);
-            socket.emit("error", "Failed to fetch rooms");
+        }
+    });
+
+    socket.on("typing_stop", (receiverId: string) => {
+        // Clear timeout if exists
+        if (typingUsers.has(socket.user.id)) {
+            clearTimeout(typingUsers.get(socket.user.id));
+            typingUsers.delete(socket.user.id);
+        }
+
+        // Notify receiver
+        const receiverSocket = onlineUsers.get(receiverId);
+        if (receiverSocket) {
+            receiverSocket.emit("user_stopped_typing", {
+                userId: socket.user.id
+            });
         }
     });
 
     // Handle disconnect
     socket.on("disconnect", async () => {
-        try {
-            // Find all rooms where user is a participant
-            const rooms = await ChatRoomModel.findAll({
-                where: {
-                    participants: {
-                        [Op.contains]: [socket.user.id]
-                    }
-                }
-            });
+        // Remove from online users
+        onlineUsers.delete(socket.user.id);
 
-            // Remove user from all rooms
-            for (const room of rooms) {
-                room.participants = room.participants.filter(id => id !== socket.user.id);
-                if (room.participants.length === 0) {
-                    await room.destroy();
-                } else {
-                    await room.save();
-                }
-            }
-        } catch (error) {
-            console.error("Error handling disconnect:", error);
+        // Clear any typing timeouts
+        if (typingUsers.has(socket.user.id)) {
+            clearTimeout(typingUsers.get(socket.user.id));
+            typingUsers.delete(socket.user.id);
         }
+
+        // Broadcast offline status
+        socket.broadcast.emit('user_status', {
+            userId: socket.user.id,
+            status: 'offline'
+        });
     });
 };
