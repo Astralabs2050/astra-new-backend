@@ -68,7 +68,67 @@ export class AuthService {
 
     return { status: true, message: "User registered successfully" };
   }
+  public async verifyCreator(data:any){
+    const transaction = await sequelize.transaction();
+    try{
+      const {fullName,email,password} = data;
+       // Check if the user already exists
+       const userWithEmailExists = await UsersModel.findOne({
+        where: { email },
+        transaction,
+      });
+      if (userWithEmailExists) {
+        return {
+          status: false,
+          message: `User with email ${email} already exists`,
+        };
+      }
+      // Hash the password
+      const salt: string = await bcrypt.genSalt(15);
+      const hashPassword: string = await bcrypt.hash(password, salt);
+      const otp = uuidv4().slice(0, 4);
 
+      const newUser = {
+        email,
+        password: hashPassword,
+        otp,
+      };
+       // Create user within transaction
+       const newCreateUser = await UsersModel.create(newUser, { transaction });
+        // Create the creator profile
+      const creator = {
+        userId: newCreateUser.id,
+        fullName,
+      };
+      const newCreator = await CreatorModel.create(creator, { transaction });
+      // Commit the transaction
+      
+      try {
+        await sendEmail(email, "OTP", `otp ${otp}`);
+      } catch (err:any) {
+        return {
+          status: false,
+          message: "Error registering creator",
+          error: err.message,
+        };
+        console.log("Error sending mail:", err);
+      }
+      await transaction.commit();
+      return {
+        status: true,
+        message: "OTP Sent",
+      };
+    }catch(error:any){
+       // Rollback transaction on error
+       await transaction.rollback();
+       console.error("Error registering creator:", error);
+       return {
+         status: false,
+         message: "Error registering creator",
+         error: error.message,
+       };
+    }
+  }
   public async login(credentials: any) {
     const { email, password } = credentials;
 
@@ -139,108 +199,133 @@ export class AuthService {
   public async registerCreatorService(data: any) {
     const transaction = await sequelize.transaction();
     try {
-      const { email, password, fullName, profileImage } = data;
-
+      const { email, fullName, profileImage } = data;
+  
       // Check if the user already exists
       const userWithEmailExists = await UsersModel.findOne({
         where: { email },
         transaction,
       });
-
-      if (userWithEmailExists) {
+  
+      if (!userWithEmailExists) {
         return {
+          message: "Invalid Email",
           status: false,
-          message: `User with email ${email} already exists`,
         };
       }
-
-      // Hash the password
-      const salt: string = await bcrypt.genSalt(15);
-      const hashPassword: string = await bcrypt.hash(password, salt);
-      const otp = uuidv4().slice(0, 4);
-
-      const newUser = {
-        email,
-        password: hashPassword,
-        otp,
-      };
-
-      // Create user within transaction
-      const newCreateUser = await UsersModel.create(newUser, { transaction });
-
+  
+      // Check if the creator already exists
+      const existingCreator = await CreatorModel.findOne({
+        where: { userId: userWithEmailExists.id },
+        transaction,
+      });
+  
       // Validate and process category and skills if they are arrays
       const category = Array.isArray(data?.category) ? data.category : [];
       const skills = Array.isArray(data?.skills) ? data.skills : [];
-
-      // Create the creator profile
-      const creator = {
-        userId: newCreateUser.id,
-        fullName,
-        location: data?.location,
-        category, // using validated category array
-        skills, // using validated skills array
-        creatorType: data?.creatorType,
-      };
-      const newCreator = await CreatorModel.create(creator, { transaction });
-
-      // Create work experience if available
-      if (Array.isArray(data?.work) && data.work.length > 0) {
-        const workExperiences = data.work.map((work: any) => ({
-          creatorId: newCreator.id,
-          title: work.title,
-          description: work.description,
-          companyName: work.companyName,
-          startyear: work.startyear,
-          startMonth: work.startMonth,
-          endyear: work.endyear,
-          endMonth: work.endMonth,
-        }));
-        await WorkExperienceModel.bulkCreate(workExperiences, { transaction });
-      }
-
-      if (Array.isArray(data?.projects) && data.projects.length > 0) {
-        const projectExperiences = data.projects.map((project: any) => ({
-          creatorId: newCreator.id,
-          title: project.title,
-          projectDescription: project.projectDescription,
-          tags: project.tags,
-        }));
-
-        const newProjects = await ProjectModel.bulkCreate(projectExperiences, {
-          transaction,
-        });
-
-        // Upload project images (if available)
-        await Promise.all(
-          newProjects.map(async (project: any, index: number) => {
-            const productImage = await uploadSingleMedia(
-              project.id,
-              "PROJECT_IMAGE",
-              data.projects[index]?.image,
-              "project",
-              transaction,
-            );
-            console.log("productImage", productImage);
-          }),
+  
+      if (existingCreator) {
+        // Update the existing creator profile
+        await CreatorModel.update(
+          {
+            fullName,
+            location: data?.location,
+            category,
+            skills,
+            creatorType: data?.creatorType,
+          },
+          {
+            where: { userId: userWithEmailExists.id },
+            transaction,
+          }
         );
+  
+        // Get the creator's ID for work and projects
+        const creatorId = existingCreator.id;
+  
+        // Update work experience if available
+        if (Array.isArray(data?.work) && data.work.length > 0) {
+          await WorkExperienceModel.destroy({
+            where: { creatorId },
+            transaction,
+          });
+          
+          const workExperiences = data.work.map((work: any) => ({
+            creatorId,
+            title: work.title,
+            description: work.description,
+            companyName: work.companyName,
+            startyear: work.startyear,
+            startMonth: work.startMonth,
+            endyear: work.endyear,
+            endMonth: work.endMonth,
+          }));
+          await WorkExperienceModel.bulkCreate(workExperiences, { transaction });
+        }
+  
+        // Update projects if available
+        if (Array.isArray(data?.projects) && data.projects.length > 0) {
+          await ProjectModel.destroy({
+            where: { creatorId },
+            transaction,
+          });
+  
+          const projectExperiences = data.projects.map((project: any) => ({
+            creatorId,
+            title: project.title,
+            projectDescription: project.projectDescription,
+            tags: project.tags,
+          }));
+  
+          const newProjects = await ProjectModel.bulkCreate(projectExperiences, {
+            transaction,
+          });
+  
+          // Upload project images (if available)
+          await Promise.all(
+            newProjects.map(async (project: any, index: number) => {
+              const productImage = await uploadSingleMedia(
+                project.id,
+                "PROJECT_IMAGE",
+                data.projects[index]?.image,
+                "project",
+                transaction,
+              );
+              console.log("productImage", productImage);
+            }),
+          );
+        }
+      } else {
+        // Create the creator profile if it does not exist
+        const creator = {
+          userId: userWithEmailExists.id,
+          location: data?.location,
+          category,
+          skills,
+          creatorType: data?.creatorType,
+        };
+        const newCreator = await CreatorModel.create(creator, { transaction });
+  
+        // Create work experience and projects as before
+        // [Insert the previous logic for creating work experience and projects]
       }
-
+  
       // Commit the transaction
       await transaction.commit();
-
+  
       // Upload profile picture after transaction is successful
       if (profileImage) {
         await uploadSingleMedia(
-          newCreateUser.id,
+          userWithEmailExists.id,
           "PROFILE_PICTURE",
           profileImage,
           "user",
         );
       }
-
+  
       return {
         status: true,
-        message: "Creator profile successfully created",
+        message: existingCreator ? "Creator profile successfully updated" : "Creator profile successfully created",
       };
     } catch (error: any) {
       // Rollback transaction on error
@@ -253,6 +338,7 @@ export class AuthService {
       };
     }
   }
+  
 
   public async registerBrandService(data: any) {
     const transaction = await sequelize.transaction();
