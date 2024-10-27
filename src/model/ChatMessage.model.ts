@@ -9,7 +9,7 @@ import {
     CreatedAt,
     UpdatedAt
   } from "sequelize-typescript";
-  import { ChatRoomModel } from "./ChatRoom.model";
+  import { ChatRoomModel } from "./ChatRoomModel";
   
   @Table({
     tableName: "chat_messages",

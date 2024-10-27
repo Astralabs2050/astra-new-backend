@@ -2,7 +2,7 @@ import { Handshake } from './../../node_modules/socket.io/dist/socket-types.d';
 // File: socketHandler.js
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
-import { test } from './test';
+import { test } from './handlers';
 
 const JWT_SECRET: string = process.env.JWT_SECRET as string;
 
