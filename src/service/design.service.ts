@@ -96,6 +96,16 @@ class DesignClass {
       };
     }
   };
+  public uploadNewDesign = async ()=>{
+    try{
+
+    }catch(err:any){
+      return {
+        message: err?.message,
+        status: false,
+      };
+    }
+  }
 }
 
 // Export an instance of the DesignClass

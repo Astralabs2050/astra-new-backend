@@ -10,4 +10,7 @@ designRouter.post(
   DesignController.createNewDesign,
 );
 
+designRouter.post("/post-design", isAuthenticated, 
+  DesignController.uploadNewDesign
+)
 export default designRouter;

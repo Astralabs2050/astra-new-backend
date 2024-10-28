@@ -213,7 +213,12 @@ export class AuthService {
           status: false,
         };
       }
-  
+      if(!userWithEmailExists?.verified){
+        return {
+          message: "Please verify your email",
+          status: false,
+        };
+      }
       // Check if the creator already exists
       const existingCreator = await CreatorModel.findOne({
         where: { userId: userWithEmailExists.id },
