@@ -4,8 +4,7 @@ import { BrandModel } from "./brand.model";
 import { CreatorModel } from "./creator.model";
 import { ProjectModel } from "./project.model";
 import { WorkExperienceModel } from "./workExperience.model";
-import { ChatRoomModel } from "./ChatRoomModel";
-import { ChatMessageModel } from "./ChatMessage.model";
+import { MessageModel } from "./ChatMessage.model";
 export {
   UsersModel,
   MediaModel,
@@ -13,6 +12,5 @@ export {
   CreatorModel,
   ProjectModel,
   WorkExperienceModel,
-  ChatRoomModel,
-  ChatMessageModel,
+  MessageModel
 };

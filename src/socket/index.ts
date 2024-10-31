@@ -47,8 +47,7 @@ const handleSocketConnection = (io: {
     // Emit connection status
     socket.emit("connection_status", true);
     
-    // test function here you would call other functions here
-    test(socket)
+   
     // Handle disconnect
     socket.on("disconnect", async () => {
       console.log(`${socket.id} disconnected`);

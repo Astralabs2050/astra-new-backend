@@ -8,8 +8,7 @@ import {
   CreatorModel,
   ProjectModel,
   WorkExperienceModel,
-  ChatMessageModel,
-  ChatRoomModel,
+  MessageModel
 } from "./model";
 import { dbConfig } from "../common/utility";
 
@@ -28,8 +27,7 @@ const sequelizeOptions: any = {
     CreatorModel,
     ProjectModel,
     WorkExperienceModel,
-    ChatMessageModel,
-    ChatRoomModel,
+    MessageModel
   ],
 };
 

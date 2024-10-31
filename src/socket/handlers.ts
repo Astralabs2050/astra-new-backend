@@ -1,4 +1,4 @@
-import { ChatMessageModel } from '/Users/chukwumaihenzerue/Desktop/astra-new-backend/src/model/index';
+import { ChatMessageModel } from '../model';
 import { Op } from 'sequelize';
 
 // Track online users and their sockets

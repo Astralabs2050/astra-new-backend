@@ -1,81 +1,63 @@
-// ChatMessage.model.ts
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  ForeignKey,
-  BelongsTo,
-  CreatedAt,
-  UpdatedAt
-} from "sequelize-typescript";
-import { ChatRoomModel } from "./ChatRoomModel";
-
-@Table({
-  tableName: "chat_messages",
-  timestamps: true,
-})
-export class ChatMessageModel extends Model {
-  @Column({
-      type: DataType.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-  })
-  id!: number;
-
-  // Remove this if you're moving to direct messaging only
-  @ForeignKey(() => ChatRoomModel)
-  @Column({
-      type: DataType.INTEGER,
-      allowNull: true, // Changed to true since we're moving to direct messaging
-  })
-  roomId?: number;
-
-  @Column({
-      type: DataType.STRING,
-      allowNull: false,
-  })
-  senderId!: string;
-
-  @Column({
-      type: DataType.STRING,
-      allowNull: false,
-  })
-  senderName!: string;
-
-  // Add receiverId for private messaging
-  @Column({
-      type: DataType.STRING,
-      allowNull: false,
-  })
-  receiverId!: string;
-
-  @Column({
-      type: DataType.TEXT,
-      allowNull: false,
-  })
-  content!: string;
-
-  // Add delivered status
-  @Column({
-      type: DataType.BOOLEAN,
-      defaultValue: false,
-  })
-  delivered!: boolean;
-
-  // Add readAt timestamp
-  @Column({
-      type: DataType.DATE,
-      allowNull: true,
-  })
-  readAt?: Date;
-
-  @CreatedAt
-  createdAt!: Date;
-
-  @UpdatedAt
-  updatedAt!: Date;
-
-  @BelongsTo(() => ChatRoomModel)
-  room?: ChatRoomModel;
-}
+    Model,
+    Table,
+    PrimaryKey,
+    Column,
+    DataType,
+    AllowNull,
+    Default,
+    Index,
+    ForeignKey,
+    BelongsTo,
+  } from "sequelize-typescript";
+  import { v4 as uuidv4 } from "uuid";
+  import { UsersModel as User } from "./user.model"; // Assuming you have a User model
+  
+  @Table({ timestamps: true, tableName: "messages" }) // Renamed the table to "staff_messages"
+  export class MessageModel extends Model {
+    @PrimaryKey
+    @Default(uuidv4)
+    @Column(DataType.UUID)
+    id!: string;
+  
+    @Column(DataType.TEXT)
+    message?: string;
+  
+    @Column(DataType.STRING)
+    type?: string;
+  
+    @ForeignKey(() => User)
+    @Column(DataType.UUID)
+    receiverId!: string;
+  
+    @Column(DataType.BOOLEAN)
+    sent!: boolean;
+  
+    @Column(DataType.BOOLEAN)
+    seen!: boolean;
+  
+    @BelongsTo(() => User, {
+      foreignKey: "receiverId",
+      as: "receiver",
+      onDelete: "CASCADE",
+    })
+    receiver!: User;
+  
+    @ForeignKey(() => User)
+    @Column(DataType.UUID)
+    senderId!: string;
+  
+    @BelongsTo(() => User, {
+      foreignKey: "senderId",
+      as: "sender",
+      onDelete: "CASCADE",
+    })
+    sender!: User;
+  
+    // @ForeignKey(() => User)
+    // @Column(DataType.UUID)
+    // receiverId!: string;
+  
+    // @BelongsTo(() => User, { foreignKey: 'receiverId', as: 'receiver' })
+    // receiver!: User;
+  }
