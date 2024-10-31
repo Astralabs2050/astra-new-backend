@@ -1,15 +1,19 @@
 import axios from "axios";
-import { DesignModel } from "../model/design.model";
+import { creatorType, DesignModel } from "../model/design.model";
 import { MediaModel } from "../model/media.model";
 import { sequelize } from "../db"; // Import your sequelize instance
 import { uploadImageToCloudinary } from "../../util/storageHelpers";
+import { PieceModel } from "../model";
 
 class DesignClass {
   // Method to generate new fashion design iterations
-  public generateNewDesign = async (data: {
-    prompt: string;
-    image?: string;
-  },userId:string) => {
+  public generateNewDesign = async (
+    data: {
+      prompt: string;
+      image?: string;
+    },
+    userId: string,
+  ) => {
     const transaction = await sequelize.transaction(); // Start a new transaction
     try {
       console.log("Reaching the service1");
@@ -44,7 +48,7 @@ class DesignClass {
       const newDesign = await DesignModel.create(
         {
           prompt: data.prompt,
-          userId
+          userId,
           // Add other fields here if needed, such as outfitName or pieceNumber
         },
         { transaction },
@@ -59,7 +63,7 @@ class DesignClass {
             link: url,
             mediaType: "AI_GENERATED_IMAGE", // Assuming mediaType is 'image'
             designIds: newDesign.id,
-           
+
             // Link to the newly created design
           },
           { transaction },
@@ -76,9 +80,8 @@ class DesignClass {
       return {
         message: "Designs generated",
         data: {
-          images:imageUrls,
-          designId:newDesign.id
-        
+          images: imageUrls,
+          designId: newDesign.id,
         },
         status: true,
       };
@@ -152,7 +155,7 @@ class DesignClass {
       const newDesign = await DesignModel.create(
         {
           prompt: "User uploaded design",
-          userId
+          userId,
           // Add other fields here if needed, such as outfitName or pieceNumber
         },
         { transaction }, // Pass the transaction object here
@@ -174,11 +177,9 @@ class DesignClass {
 
       return {
         message: "Images uploaded successfully",
-        data:
-        {
+        data: {
           images: imageLinks,
-          designId:newDesign.id
-        
+          designId: newDesign.id,
         },
         status: true,
       };
@@ -193,19 +194,127 @@ class DesignClass {
     }
   };
 
-  public addCreatorToDesign = async (designId:string)=>{
-    try{
+  public addCreatorToDesign = async (
+    designId: string,
+    creator: creatorType,
+  ) => {
+    try {
       //check if the design id is valid
       const design = await DesignModel.findOne({
-        where:{ id:designId,}
-      })
-    }catch(err:any){
+        where: { id: designId },
+      });
+      if (!design) {
+        return {
+          message: "No design found",
+          status: false,
+        };
+      }
+      //update design model
+      await design.update({
+        creatorType: creator,
+      });
+      return {
+        message: "Creator added successfully",
+        status: true,
+        data: design,
+      };
+    } catch (err: any) {
       return {
         message: err?.message || "An error occurred during upload",
         status: false,
       };
     }
-  }
+  };
+  public additionalInformation = async (designId: string, data: any) => {
+    const transaction = await sequelize.transaction();
+    try {
+      // Validate Design
+      const design = await DesignModel.findOne({ where: { id: designId } });
+      if (!design) {
+        await transaction.rollback();
+        return { message: "No design found", status: false };
+      }
+  
+      // Update Design
+      await design.update(
+        { outfitName: data?.outfitName, pieceNumber: data?.pieceNumber },
+        { transaction }
+      );
+  
+      // Create Pieces
+      const createdPieces = await Promise.all(
+        data?.pieces?.map(async (piece: any) =>
+          PieceModel.create(
+            {
+              designId: design.id,
+              pieceType: piece.type,
+              designNumber: piece.designNumber,
+              piecePrice: piece.piecePrice,
+            },
+            { transaction }
+          )
+        )
+      );
+  
+      // Prepare Image Data for Cloudinary Upload
+      const imageUploads = data.imageData.map((image: any, index: number) => ({
+        image: image.image,
+        view: image.view,
+        pieceId: createdPieces[index]?.id,
+        type: image.view,
+      }));
+  
+      const printUploads = data.prints.map((print: any, index: number) => ({
+        image: print.image,
+        pieceId: createdPieces[index]?.id,
+        type: "PRINT",
+      }));
+  
+      const allUploads = [...imageUploads, ...printUploads];
+  
+      // Upload All Images
+      const uploadResults = await Promise.all(
+        allUploads.map((upload) =>
+          uploadImageToCloudinary(upload.view || "PRINT", upload.image, upload.pieceId)
+        )
+      );
+  
+      // Filter Successful and Failed Uploads
+      const successfulUploads = uploadResults.filter((result) => result.success);
+      const failedUploads = uploadResults.filter((result) => !result.success);
+  
+      if (failedUploads.length > 0) {
+        console.warn("Some images failed to upload:", failedUploads);
+        await transaction.rollback();
+        return {
+          message: "Some images failed to upload. Please try again.",
+          status: false,
+        };
+      }
+  
+      // Create Media Records
+      const mediaRecords = successfulUploads.map((result, index) => ({
+        link: result.url,
+        mediaType: allUploads[index].type,
+        pieceId: allUploads[index].pieceId,
+        designId: design.id
+      }));
+  
+      await MediaModel.bulkCreate(mediaRecords, { transaction });
+  
+      // Commit Transaction
+      await transaction.commit();
+      return { message: "Data saved successfully", status: true };
+    } catch (err: any) {
+      await transaction.rollback();
+      return {
+        message: err?.message || "An error occurred during upload",
+        status: false,
+      };
+    }
+  };
+  
+  
 }
 
 // Export an instance of the DesignClass

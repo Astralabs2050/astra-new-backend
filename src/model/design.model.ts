@@ -15,7 +15,7 @@ import { PieceModel } from "./piece.model";
 import { MediaModel } from "./media.model";
 import { UsersModel } from "./user.model";
 
-enum creatorType {
+export enum creatorType {
   graphicsDesigner = "graphicsDesigner",
   fashionIllustrator = "fashionIllustrator",
   techPackDesigner = "techPackDesigner",

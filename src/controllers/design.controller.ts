@@ -6,7 +6,7 @@ class designController {
     try {
       console.log("reaching the controller");
       const { id } = (req as any)?.user;
-      const response = await DesignService.generateNewDesign(req.body,id);
+      const response = await DesignService.generateNewDesign(req.body, id);
       return res.json(response);
     } catch (error: any) {
       return res.status(400).json({
@@ -30,16 +30,35 @@ class designController {
   };
 
   public addCreatorToDesign = async (req: Request, res: Response) => {
-    try{
-      const {designId} = req.params
-
-    }catch(error:any){
+    try {
+     
+      const { creator,designId } = req.body;
+      const response = await DesignService.addCreatorToDesign(
+        designId,
+        creator,
+      );
+      return res.json(response);
+    } catch (error: any) {
       return res.status(400).json({
         status: false,
         message: `An error occurred: ${error?.message || error}`,
       });
     }
   };
+
+  public additionalInfromation = async(req: Request, res: Response) =>{
+    try{
+      const {designId} = req.body
+      const response = await DesignService.additionalInformation(designId,req.body?.data)
+      return res.json(response)
+
+    }catch(error: any){
+      return res.status(400).json({
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      });
+    }
+  }
 }
 
 const DesignController = new designController();
