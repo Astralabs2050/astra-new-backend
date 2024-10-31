@@ -13,7 +13,10 @@ authRouter.post(
 
 authRouter.post("/login", authcontroller.login.bind(authcontroller));
 
-authRouter.post('/register/creator/step-1', authcontroller.registerCreatorEmailVerification.bind(authcontroller))
+authRouter.post(
+  "/register/creator/step-1",
+  authcontroller.registerCreatorEmailVerification.bind(authcontroller),
+);
 authRouter.post(
   "/register/creator/step-2",
   authcontroller.registerCreator.bind(authcontroller),

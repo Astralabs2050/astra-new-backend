@@ -15,5 +15,5 @@ export {
   ProjectModel,
   WorkExperienceModel,
   DesignModel,
-  PieceModel
+  PieceModel,
 };

@@ -17,8 +17,8 @@ class designController {
 
   public uploadNewDesign = async (req: Request, res: Response) => {
     try {
-      console.log("reaching the controller");
-      const response = await DesignService.generateNewDesign(req.body);
+      const { id } = (req as any)?.user;
+      const response = await DesignService.uploadNewDesign(req.body, id);
       return res.json(response);
     } catch (error: any) {
       return res.status(400).json({
@@ -27,7 +27,6 @@ class designController {
       });
     }
   };
-
 }
 
 const DesignController = new designController();

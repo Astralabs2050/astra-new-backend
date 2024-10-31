@@ -32,7 +32,7 @@ export class DesignModel extends Model {
   pieceNumber?: number;
 
   @Column(DataType.STRING)
-  prompt!: string;
+  prompt?: string;
 
   @Column(DataType.ENUM(...Object.values(creatorType)))
   creatorType?: creatorType;

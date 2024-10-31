@@ -40,13 +40,13 @@ export class WorkExperienceModel extends Model {
 
   @Column(DataType.DATE)
   startYear!: Date;
-  
+
   @Column(DataType.DATE)
   startMonth!: Date;
 
   @Column(DataType.DATE)
   endYear!: Date;
-  
+
   @Column(DataType.DATE)
   endMonth!: Date;
 }

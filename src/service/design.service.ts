@@ -2,10 +2,14 @@ import axios from "axios";
 import { DesignModel } from "../model/design.model";
 import { MediaModel } from "../model/media.model";
 import { sequelize } from "../db"; // Import your sequelize instance
+import { uploadImageToCloudinary } from "../../util/storageHelpers";
 
 class DesignClass {
   // Method to generate new fashion design iterations
-  public generateNewDesign = async (data: { prompt: string; image?: string }) => {
+  public generateNewDesign = async (data: {
+    prompt: string;
+    image?: string;
+  }) => {
     const transaction = await sequelize.transaction(); // Start a new transaction
     try {
       console.log("Reaching the service1");
@@ -42,7 +46,7 @@ class DesignClass {
           prompt: data.prompt,
           // Add other fields here if needed, such as outfitName or pieceNumber
         },
-        { transaction }
+        { transaction },
       );
 
       console.log(newDesign);
@@ -55,7 +59,7 @@ class DesignClass {
             mediaType: "AI_GENERATED_IMAGE", // Assuming mediaType is 'image'
             designIds: newDesign.id, // Link to the newly created design
           },
-          { transaction }
+          { transaction },
         );
       });
 
@@ -78,10 +82,13 @@ class DesignClass {
       console.error("Error generating design iterations:", err.message || err);
 
       // Custom error message handling
-      let errorMessage = "An unexpected error occurred while generating designs.";
+      let errorMessage =
+        "An unexpected error occurred while generating designs.";
       if (err.response) {
         // API response error
-        errorMessage = `API Error: ${err.response.data.error || err.response.data.message}`;
+        errorMessage = `API Error: ${
+          err.response.data.error || err.response.data.message
+        }`;
       } else if (err.request) {
         // Request was made but no response received
         errorMessage = "Network error: No response received from the API.";
@@ -96,16 +103,82 @@ class DesignClass {
       };
     }
   };
-  public uploadNewDesign = async ()=>{
-    try{
+  public uploadNewDesign = async (data: any, userId: string) => {
+    const transaction = await sequelize.transaction(); // Start a transaction
+    try {
+      // Destructure images from the data object
+      const { images } = data;
+      console.log("images", images);
 
-    }catch(err:any){
+      // Check if there are images to upload
+      if (!images || images.length === 0) {
+        return {
+          message: "Please select an image to upload",
+          status: false,
+        };
+      }
+
+      // Upload all images in parallel to Cloudinary
+      const uploadPromises = images.map((image: any) =>
+        uploadImageToCloudinary("UPLOAD_DESIGN_IMAGES", image, userId),
+      );
+
+      const imageResults = await Promise.all(uploadPromises);
+
+      // Filter out failed uploads and log if any uploads failed
+      const successfulUploads = imageResults.filter((result) => result.success);
+      const failedUploads = imageResults.filter((result) => !result.success);
+
+      if (failedUploads.length > 0) {
+        console.warn("Some images failed to upload:", failedUploads);
+        await transaction.rollback();
+        return {
+          message: "Some images failed to upload. Please try again.",
+          status: false,
+        };
+      }
+
+      // Collect only successful URLs for the database
+      const imageLinks = successfulUploads.map((result) => result.url);
+
+      // Create a new design in the database within the transaction
+      const newDesign = await DesignModel.create(
+        {
+          prompt: "User uploaded design",
+          // Add other fields here if needed, such as outfitName or pieceNumber
+        },
+        { transaction }, // Pass the transaction object here
+      );
+
+      // Create media records for each uploaded image
+      const mediaRecords = imageLinks.map((image_link: string) => ({
+        image_link,
+        mediaType: "USER_UPLOADED_IMAGES",
+        designIds: newDesign.id, // Link to the newly created design
+        userId,
+      }));
+
+      // Save all media records in bulk within the transaction
+      await MediaModel.bulkCreate(mediaRecords, { transaction });
+
+      // Commit the transaction if everything is successful
+      await transaction.commit();
+
       return {
-        message: err?.message,
+        message: "Images uploaded successfully",
+        data: imageLinks,
+        status: true,
+      };
+    } catch (err: any) {
+      // Rollback the transaction in case of error
+      await transaction.rollback();
+
+      return {
+        message: err?.message || "An error occurred during upload",
         status: false,
       };
     }
-  }
+  };
 }
 
 // Export an instance of the DesignClass

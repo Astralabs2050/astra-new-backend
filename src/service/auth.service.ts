@@ -68,12 +68,12 @@ export class AuthService {
 
     return { status: true, message: "User registered successfully" };
   }
-  public async verifyCreator(data:any){
+  public async verifyCreator(data: any) {
     const transaction = await sequelize.transaction();
-    try{
-      const {fullName,email,password} = data;
-       // Check if the user already exists
-       const userWithEmailExists = await UsersModel.findOne({
+    try {
+      const { fullName, email, password } = data;
+      // Check if the user already exists
+      const userWithEmailExists = await UsersModel.findOne({
         where: { email },
         transaction,
       });
@@ -93,19 +93,19 @@ export class AuthService {
         password: hashPassword,
         otp,
       };
-       // Create user within transaction
-       const newCreateUser = await UsersModel.create(newUser, { transaction });
-        // Create the creator profile
+      // Create user within transaction
+      const newCreateUser = await UsersModel.create(newUser, { transaction });
+      // Create the creator profile
       const creator = {
         userId: newCreateUser.id,
         fullName,
       };
       const newCreator = await CreatorModel.create(creator, { transaction });
       // Commit the transaction
-      
+
       try {
         await sendEmail(email, "OTP", `otp ${otp}`);
-      } catch (err:any) {
+      } catch (err: any) {
         return {
           status: false,
           message: "Error registering creator",
@@ -118,15 +118,15 @@ export class AuthService {
         status: true,
         message: "OTP Sent",
       };
-    }catch(error:any){
-       // Rollback transaction on error
-       await transaction.rollback();
-       console.error("Error registering creator:", error);
-       return {
-         status: false,
-         message: "Error registering creator",
-         error: error.message,
-       };
+    } catch (error: any) {
+      // Rollback transaction on error
+      await transaction.rollback();
+      console.error("Error registering creator:", error);
+      return {
+        status: false,
+        message: "Error registering creator",
+        error: error.message,
+      };
     }
   }
   public async login(credentials: any) {
@@ -200,20 +200,20 @@ export class AuthService {
     const transaction = await sequelize.transaction();
     try {
       const { email, fullName, profileImage } = data;
-  
+
       // Check if the user already exists
       const userWithEmailExists = await UsersModel.findOne({
         where: { email },
         transaction,
       });
-  
+
       if (!userWithEmailExists) {
         return {
           message: "Invalid Email",
           status: false,
         };
       }
-      if(!userWithEmailExists?.verified){
+      if (!userWithEmailExists?.verified) {
         return {
           message: "Please verify your email",
           status: false,
@@ -224,11 +224,11 @@ export class AuthService {
         where: { userId: userWithEmailExists.id },
         transaction,
       });
-  
+
       // Validate and process category and skills if they are arrays
       const category = Array.isArray(data?.category) ? data.category : [];
       const skills = Array.isArray(data?.skills) ? data.skills : [];
-  
+
       if (existingCreator) {
         // Update the existing creator profile
         await CreatorModel.update(
@@ -242,19 +242,19 @@ export class AuthService {
           {
             where: { userId: userWithEmailExists.id },
             transaction,
-          }
+          },
         );
-  
+
         // Get the creator's ID for work and projects
         const creatorId = existingCreator.id;
-  
+
         // Update work experience if available
         if (Array.isArray(data?.work) && data.work.length > 0) {
           await WorkExperienceModel.destroy({
             where: { creatorId },
             transaction,
           });
-          
+
           const workExperiences = data.work.map((work: any) => ({
             creatorId,
             title: work.title,
@@ -265,27 +265,32 @@ export class AuthService {
             endyear: work.endyear,
             endMonth: work.endMonth,
           }));
-          await WorkExperienceModel.bulkCreate(workExperiences, { transaction });
+          await WorkExperienceModel.bulkCreate(workExperiences, {
+            transaction,
+          });
         }
-  
+
         // Update projects if available
         if (Array.isArray(data?.projects) && data.projects.length > 0) {
           await ProjectModel.destroy({
             where: { creatorId },
             transaction,
           });
-  
+
           const projectExperiences = data.projects.map((project: any) => ({
             creatorId,
             title: project.title,
             projectDescription: project.projectDescription,
             tags: project.tags,
           }));
-  
-          const newProjects = await ProjectModel.bulkCreate(projectExperiences, {
-            transaction,
-          });
-  
+
+          const newProjects = await ProjectModel.bulkCreate(
+            projectExperiences,
+            {
+              transaction,
+            },
+          );
+
           // Upload project images (if available)
           await Promise.all(
             newProjects.map(async (project: any, index: number) => {
@@ -310,14 +315,14 @@ export class AuthService {
           creatorType: data?.creatorType,
         };
         const newCreator = await CreatorModel.create(creator, { transaction });
-  
+
         // Create work experience and projects as before
         // [Insert the previous logic for creating work experience and projects]
       }
-  
+
       // Commit the transaction
       await transaction.commit();
-  
+
       // Upload profile picture after transaction is successful
       if (profileImage) {
         await uploadSingleMedia(
@@ -327,10 +332,12 @@ export class AuthService {
           "user",
         );
       }
-  
+
       return {
         status: true,
-        message: existingCreator ? "Creator profile successfully updated" : "Creator profile successfully created",
+        message: existingCreator
+          ? "Creator profile successfully updated"
+          : "Creator profile successfully created",
       };
     } catch (error: any) {
       // Rollback transaction on error
@@ -343,7 +350,6 @@ export class AuthService {
       };
     }
   }
-  
 
   public async registerBrandService(data: any) {
     const transaction = await sequelize.transaction();
