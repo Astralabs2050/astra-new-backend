@@ -27,6 +27,8 @@ class designController {
       });
     }
   };
+
+  public addCreatorToDesign = async (req: Request, res: Response) => {};
 }
 
 const DesignController = new designController();

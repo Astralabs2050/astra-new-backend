@@ -10,10 +10,12 @@ import sendEmail from "../../util/sendMail";
 import {
   BrandModel,
   CreatorModel,
+  MediaModel,
   ProjectModel,
   WorkExperienceModel,
 } from "../model";
 import { sequelize } from "../db";
+import { uploadImageToCloudinary } from "../../util/storageHelpers";
 
 interface Brand {
   id: string; // UUID for the user
@@ -291,19 +293,55 @@ export class AuthService {
             },
           );
 
-          // Upload project images (if available)
-          await Promise.all(
-            newProjects.map(async (project: any, index: number) => {
-              const productImage = await uploadSingleMedia(
-                project.id,
-                "PROJECT_IMAGE",
-                data.projects[index]?.image,
-                "project",
-                transaction,
-              );
-              console.log("productImage", productImage);
-            }),
-          );
+          try {
+            await Promise.all(
+              newProjects.map(async (project: any, index: number) => {
+                // Upload project images (if available)
+                const uploadPromises =
+                  data.projects[index]?.image?.map((image: any) =>
+                    uploadImageToCloudinary("PROJECT_IMAGE", image, project.id),
+                  ) ?? [];
+
+                // Wait for all image upload promises to resolve
+                const uploadResults = await Promise.all(uploadPromises);
+
+                // Filter out failed uploads and log if any uploads failed
+                const successfulUploads = uploadResults.filter(
+                  (result) => result.success,
+                );
+                const failedUploads = uploadResults.filter(
+                  (result) => !result.success,
+                );
+
+                if (failedUploads.length > 0) {
+                  console.warn("Some images failed to upload:", failedUploads);
+                  await transaction.rollback();
+                  throw new Error(
+                    "Some images failed to upload. Please try again.",
+                  );
+                }
+
+                // Collect only successful URLs for the database
+                const imageLinks = successfulUploads.map(
+                  (result) => result.url,
+                );
+                const mediaRecords = imageLinks.map((image_link: string) => ({
+                  link: image_link,
+                  mediaType: "USER_UPLOADED_IMAGES",
+                  projectId: project.id, // Link to the newly created design
+                }));
+
+                // Save all media records in bulk within the transaction
+                await MediaModel.bulkCreate(mediaRecords, { transaction });
+              }),
+            );
+          } catch (error: any) {
+            console.error(error);
+            return {
+              message: error.message,
+              status: false,
+            };
+          }
         }
       } else {
         // Create the creator profile if it does not exist
@@ -325,11 +363,30 @@ export class AuthService {
 
       // Upload profile picture after transaction is successful
       if (profileImage) {
-        await uploadSingleMedia(
+        // Step 1: Upload to Cloudinary
+        const uploadResult: any = await uploadSingleMedia(
           userWithEmailExists.id,
           "PROFILE_PICTURE",
           profileImage,
           "user",
+        );
+
+        // Check if the upload was successful
+        if (!uploadResult.success) {
+          console.warn("Failed to upload profile image to Cloudinary.");
+          throw new Error("Profile image upload failed. Please try again.");
+        }
+
+        // Step 2: Save the uploaded image link to the MediaModel
+        const mediaRecord = {
+          link: uploadResult?.url, // Use the URL returned from Cloudinary
+          mediaType: "PROFILE_PICTURE",
+          userId: userWithEmailExists.id, // Link to the user
+        };
+
+        await MediaModel.create(mediaRecord);
+        console.log(
+          "Profile image successfully uploaded and saved to MediaModel.",
         );
       }
 
