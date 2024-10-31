@@ -6,7 +6,7 @@ import { ProjectModel } from "./project.model";
 import { WorkExperienceModel } from "./workExperience.model";
 import { DesignModel } from "./design.model";
 import { PieceModel } from "./piece.model";
-
+import { JobModel } from "./job.model";
 export {
   UsersModel,
   MediaModel,
@@ -16,4 +16,5 @@ export {
   WorkExperienceModel,
   DesignModel,
   PieceModel,
+  JobModel
 };
