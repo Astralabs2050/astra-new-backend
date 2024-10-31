@@ -9,7 +9,7 @@ class DesignClass {
   public generateNewDesign = async (data: {
     prompt: string;
     image?: string;
-  }) => {
+  },userId:string) => {
     const transaction = await sequelize.transaction(); // Start a new transaction
     try {
       console.log("Reaching the service1");
@@ -44,6 +44,7 @@ class DesignClass {
       const newDesign = await DesignModel.create(
         {
           prompt: data.prompt,
+          userId
           // Add other fields here if needed, such as outfitName or pieceNumber
         },
         { transaction },
@@ -57,7 +58,9 @@ class DesignClass {
           {
             link: url,
             mediaType: "AI_GENERATED_IMAGE", // Assuming mediaType is 'image'
-            designIds: newDesign.id, // Link to the newly created design
+            designIds: newDesign.id,
+           
+            // Link to the newly created design
           },
           { transaction },
         );
@@ -149,6 +152,7 @@ class DesignClass {
       const newDesign = await DesignModel.create(
         {
           prompt: "User uploaded design",
+          userId
           // Add other fields here if needed, such as outfitName or pieceNumber
         },
         { transaction }, // Pass the transaction object here
@@ -188,6 +192,20 @@ class DesignClass {
       };
     }
   };
+
+  public addCreatorToDesign = async (designId:string)=>{
+    try{
+      //check if the design id is valid
+      const design = await DesignModel.findOne({
+        where:{ id:designId,}
+      })
+    }catch(err:any){
+      return {
+        message: err?.message || "An error occurred during upload",
+        status: false,
+      };
+    }
+  }
 }
 
 // Export an instance of the DesignClass

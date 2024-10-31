@@ -5,7 +5,8 @@ class designController {
   public createNewDesign = async (req: Request, res: Response) => {
     try {
       console.log("reaching the controller");
-      const response = await DesignService.generateNewDesign(req.body);
+      const { id } = (req as any)?.user;
+      const response = await DesignService.generateNewDesign(req.body,id);
       return res.json(response);
     } catch (error: any) {
       return res.status(400).json({
@@ -30,6 +31,7 @@ class designController {
 
   public addCreatorToDesign = async (req: Request, res: Response) => {
     try{
+      const {designId} = req.params
 
     }catch(error:any){
       return res.status(400).json({

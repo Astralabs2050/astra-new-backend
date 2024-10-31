@@ -6,10 +6,14 @@ import {
   DataType,
   Default,
   HasMany,
+  AllowNull,
+  ForeignKey,
+  BelongsTo,
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid";
 import { PieceModel } from "./piece.model";
 import { MediaModel } from "./media.model";
+import { UsersModel } from "./user.model";
 
 enum creatorType {
   graphicsDesigner = "graphicsDesigner",
@@ -42,6 +46,18 @@ export class DesignModel extends Model {
     as: "media",
   })
   images?: MediaModel[];
+
+  @AllowNull(true)
+  @ForeignKey(() => UsersModel)
+  @Column(DataType.UUID)
+  userId?: string;
+
+  @BelongsTo(() => UsersModel, {
+    foreignKey: "userId",
+    as: "user",
+    onDelete: "CASCADE",
+  })
+  user?: UsersModel;
 
   @HasMany(() => PieceModel, {
     foreignKey: "designId",
