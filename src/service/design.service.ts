@@ -152,7 +152,7 @@ class DesignClass {
 
       // Create media records for each uploaded image
       const mediaRecords = imageLinks.map((image_link: string) => ({
-        image_link,
+        link:image_link,
         mediaType: "USER_UPLOADED_IMAGES",
         designIds: newDesign.id, // Link to the newly created design
         userId,
