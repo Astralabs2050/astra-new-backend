@@ -80,9 +80,43 @@ export async function updateUserAvailability(status: boolean, id: string) {
 }
 
 export function markAsRead(io: any) {
-  // Implement logic for marking a message as read
+  io.on("connection", (socket: any) => {
+    socket.on("mark_as_read", async (data: any) => {
+      try {
+        await MessageModel.update(
+          { seen: true },
+          {
+            where: {
+              receiverId: data.receiverId,
+              senderId: data.senderId,
+              seen: false,
+            },
+          }
+        );
+        io.to(data.senderId).emit("message_read", { receiverId: data.receiverId });
+      } catch (error) {
+        console.error("Error in markAsRead:", error);
+      }
+    });
+  });
 }
 
 export function typing(io: any) {
-  // Implement logic for typing indicator
+  io.on("connection", (socket: any) => {
+    socket.on("typing", (data: any) => {
+      try {
+        io.to(data.receiverId).emit("typing", { senderId: data.senderId });
+      } catch (error) {
+        console.error("Error in typing:", error);
+      }
+    });
+
+    socket.on("stop_typing", (data: any) => {
+      try {
+        io.to(data.receiverId).emit("stop_typing", { senderId: data.senderId });
+      } catch (error) {
+        console.error("Error in stop_typing:", error);
+      }
+    });
+  });
 }
