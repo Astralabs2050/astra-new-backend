@@ -31,8 +31,7 @@ class designController {
 
   public addCreatorToDesign = async (req: Request, res: Response) => {
     try {
-     
-      const { creator,designId } = req.body;
+      const { creator, designId } = req.body;
       const response = await DesignService.addCreatorToDesign(
         designId,
         creator,
@@ -46,19 +45,21 @@ class designController {
     }
   };
 
-  public additionalInfromation = async(req: Request, res: Response) =>{
-    try{
-      const {designId} = req.body
-      const response = await DesignService.additionalInformation(designId,req.body?.data)
-      return res.json(response)
-
-    }catch(error: any){
+  public additionalInfromation = async (req: Request, res: Response) => {
+    try {
+      const { designId } = req.body;
+      const response = await DesignService.additionalInformation(
+        designId,
+        req.body?.data,
+      );
+      return res.json(response);
+    } catch (error: any) {
       return res.status(400).json({
         status: false,
         message: `An error occurred: ${error?.message || error}`,
       });
     }
-  }
+  };
 }
 
 const DesignController = new designController();

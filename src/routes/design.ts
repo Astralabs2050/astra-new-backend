@@ -22,6 +22,10 @@ designRouter.patch(
   DesignController.addCreatorToDesign,
 );
 
-designRouter.patch("/additional-information", isAuthenticated,DesignController.additionalInfromation)
+designRouter.patch(
+  "/additional-information",
+  isAuthenticated,
+  DesignController.additionalInfromation,
+);
 
 export default designRouter;

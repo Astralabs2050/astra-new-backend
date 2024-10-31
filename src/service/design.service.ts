@@ -234,13 +234,13 @@ class DesignClass {
         await transaction.rollback();
         return { message: "No design found", status: false };
       }
-  
+
       // Update Design
       await design.update(
         { outfitName: data?.outfitName, pieceNumber: data?.pieceNumber },
-        { transaction }
+        { transaction },
       );
-  
+
       // Create Pieces
       const createdPieces = await Promise.all(
         data?.pieces?.map(async (piece: any) =>
@@ -251,11 +251,11 @@ class DesignClass {
               designNumber: piece.designNumber,
               piecePrice: piece.piecePrice,
             },
-            { transaction }
-          )
-        )
+            { transaction },
+          ),
+        ),
       );
-  
+
       // Prepare Image Data for Cloudinary Upload
       const imageUploads = data.imageData.map((image: any, index: number) => ({
         image: image.image,
@@ -263,26 +263,32 @@ class DesignClass {
         pieceId: createdPieces[index]?.id,
         type: image.view,
       }));
-  
+
       const printUploads = data.prints.map((print: any, index: number) => ({
         image: print.image,
         pieceId: createdPieces[index]?.id,
         type: "PRINT",
       }));
-  
+
       const allUploads = [...imageUploads, ...printUploads];
-  
+
       // Upload All Images
       const uploadResults = await Promise.all(
         allUploads.map((upload) =>
-          uploadImageToCloudinary(upload.view || "PRINT", upload.image, upload.pieceId)
-        )
+          uploadImageToCloudinary(
+            upload.view || "PRINT",
+            upload.image,
+            upload.pieceId,
+          ),
+        ),
       );
-  
+
       // Filter Successful and Failed Uploads
-      const successfulUploads = uploadResults.filter((result) => result.success);
+      const successfulUploads = uploadResults.filter(
+        (result) => result.success,
+      );
       const failedUploads = uploadResults.filter((result) => !result.success);
-  
+
       if (failedUploads.length > 0) {
         console.warn("Some images failed to upload:", failedUploads);
         await transaction.rollback();
@@ -291,17 +297,17 @@ class DesignClass {
           status: false,
         };
       }
-  
+
       // Create Media Records
       const mediaRecords = successfulUploads.map((result, index) => ({
         link: result.url,
         mediaType: allUploads[index].type,
         pieceId: allUploads[index].pieceId,
-        designId: design.id
+        designId: design.id,
       }));
-  
+
       await MediaModel.bulkCreate(mediaRecords, { transaction });
-  
+
       // Commit Transaction
       await transaction.commit();
       return { message: "Data saved successfully", status: true };
@@ -313,8 +319,6 @@ class DesignClass {
       };
     }
   };
-  
-  
 }
 
 // Export an instance of the DesignClass
