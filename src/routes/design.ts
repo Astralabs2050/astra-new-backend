@@ -16,6 +16,6 @@ designRouter.post(
   DesignController.uploadNewDesign,
 );
 
-designRouter.patch("/add-creator", isAuthenticated);
+designRouter.patch("/add-creator", isAuthenticated, DesignController.addCreatorToDesign);
 
 export default designRouter;

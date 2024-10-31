@@ -28,7 +28,16 @@ class designController {
     }
   };
 
-  public addCreatorToDesign = async (req: Request, res: Response) => {};
+  public addCreatorToDesign = async (req: Request, res: Response) => {
+    try{
+
+    }catch(error:any){
+      return res.status(400).json({
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      });
+    }
+  };
 }
 
 const DesignController = new designController();

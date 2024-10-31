@@ -72,7 +72,11 @@ class DesignClass {
       console.log("Reaching the service3", imageUrls);
       return {
         message: "Designs generated",
-        data: imageUrls,
+        data: {
+          images:imageUrls,
+          designId:newDesign.id
+        
+        },
         status: true,
       };
     } catch (err: any) {
@@ -166,7 +170,12 @@ class DesignClass {
 
       return {
         message: "Images uploaded successfully",
-        data: imageLinks,
+        data:
+        {
+          images: imageLinks,
+          designId:newDesign.id
+        
+        },
         status: true,
       };
     } catch (err: any) {
