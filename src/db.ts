@@ -30,8 +30,8 @@ const sequelizeOptions: any = {
     ProjectModel,
     WorkExperienceModel,
     DesignModel,
-    JobModel,
     PieceModel,
+    JobModel
   ],
 };
 
