@@ -38,6 +38,9 @@ export class DesignModel extends Model {
   @Column(DataType.STRING)
   prompt?: string;
 
+  @Column(DataType.STRING)
+  publicKey?: string;
+
   @Column(DataType.ENUM(...Object.values(creatorType)))
   creatorType?: creatorType;
 

@@ -2,7 +2,7 @@ import axios from "axios";
 import { creatorType, DesignModel } from "../model/design.model";
 import { MediaModel } from "../model/media.model";
 import { sequelize } from "../db"; // Import your sequelize instance
-import { uploadImageToCloudinary } from "../../util/storageHelpers";
+import { uploadImageToS3 } from "../../util/storageHelpers";
 import { PieceModel } from "../model";
 
 class DesignClass {
@@ -130,7 +130,7 @@ class DesignClass {
 
       // Upload all images in parallel to Cloudinary
       const uploadPromises = images.map((image: any) =>
-        uploadImageToCloudinary("UPLOAD_DESIGN_IMAGES", image, userId),
+        uploadImageToS3("UPLOAD_DESIGN_IMAGES", image, userId),
       );
 
       const imageResults = await Promise.all(uploadPromises);
@@ -275,7 +275,7 @@ class DesignClass {
       // Upload All Images
       const uploadResults = await Promise.all(
         allUploads.map((upload) =>
-          uploadImageToCloudinary(
+          uploadImageToS3(
             upload.view || "PRINT",
             upload.image,
             upload.pieceId,

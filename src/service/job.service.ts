@@ -1,5 +1,6 @@
 import { sequelize } from "../db";
 import { DesignModel, JobModel, UsersModel } from "../model";
+import { JobApplicationModel } from "../model/jobApplication.model";
 
 class jobService {
   public createJob = async (data: any, userId: string) => {
@@ -84,6 +85,55 @@ class jobService {
       throw error;
     }
   };
+
+  public applyForJob = async(jobId:string,userId:string)=>{
+    const transaction = await sequelize.transaction();
+    try{
+      //check if the job is valid
+      const job = await JobModel.findOne({
+        where: { id: jobId },
+      });
+
+      if (!job) {
+        return {
+          message: "No job found",
+          status: false,
+        };
+      }
+
+      // Check if the user has already applied for this job
+      const existingApplication = await JobApplicationModel.findOne({
+        where: { jobId, userId },
+      });
+
+      if (existingApplication) {
+        return {
+          message: "You have already applied for this job",
+          status: false,
+        };
+      }
+
+      // Create application
+      const newApplication = await JobApplicationModel.create(
+        {
+          userId,
+          jobId,
+        },
+        { transaction },
+      );
+
+      await transaction.commit();
+
+      return {
+        message: "Application created successfully",
+        status: true,
+        data: newApplication,
+      };
+    }catch(error){
+      console.error("Error fetching jobs:", error);
+      throw error;
+    }
+  }
 }
 
 const JobService = new jobService();

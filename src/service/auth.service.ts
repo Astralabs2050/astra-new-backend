@@ -15,7 +15,7 @@ import {
   WorkExperienceModel,
 } from "../model";
 import { sequelize } from "../db";
-import { uploadImageToCloudinary } from "../../util/storageHelpers";
+import { uploadImageToS3 } from "../../util/storageHelpers";
 
 interface Brand {
   id: string; // UUID for the user
@@ -299,7 +299,7 @@ export class AuthService {
                 // Upload project images (if available)
                 const uploadPromises =
                   data.projects[index]?.image?.map((image: any) =>
-                    uploadImageToCloudinary("PROJECT_IMAGE", image, project.id),
+                    uploadImageToS3("PROJECT_IMAGE", image, project.id),
                   ) ?? [];
 
                 // Wait for all image upload promises to resolve
