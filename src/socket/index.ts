@@ -3,6 +3,7 @@ import { Handshake } from './../../node_modules/socket.io/dist/socket-types.d';
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import { test } from './handlers';
+import { markAsRead, typing } from './handleMessages';
 
 const JWT_SECRET: string = process.env.JWT_SECRET as string;
 
@@ -47,7 +48,12 @@ const handleSocketConnection = (io: {
     // Emit connection status
     socket.emit("connection_status", true);
     
-   
+    // Add markAsRead functionality
+    markAsRead(io);
+
+    // Add typing functionality
+    typing(io);
+
     // Handle disconnect
     socket.on("disconnect", async () => {
       console.log(`${socket.id} disconnected`);
