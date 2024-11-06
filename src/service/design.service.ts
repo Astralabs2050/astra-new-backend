@@ -2,7 +2,7 @@ import axios from "axios";
 import { creatorType, DesignModel } from "../model/design.model";
 import { MediaModel } from "../model/media.model";
 import { sequelize } from "../db"; // Import your sequelize instance
-import { uploadImageToS3 } from "../../util/storageHelpers";
+import { uploadImageToS3 } from "../../util/aws";
 import { PieceModel } from "../model";
 
 class DesignClass {
@@ -132,7 +132,7 @@ class DesignClass {
       const uploadPromises = images.map((image: any) =>
         uploadImageToS3("UPLOAD_DESIGN_IMAGES", image, userId),
       );
-
+console.log("uploadPromises",uploadPromises)
       const imageResults = await Promise.all(uploadPromises);
 
       // Filter out failed uploads and log if any uploads failed

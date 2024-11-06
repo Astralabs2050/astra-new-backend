@@ -15,7 +15,7 @@ import {
   WorkExperienceModel,
 } from "../model";
 import { sequelize } from "../db";
-import { uploadImageToS3 } from "../../util/storageHelpers";
+import { uploadImageToS3 } from "../../util/aws";
 
 interface Brand {
   id: string; // UUID for the user

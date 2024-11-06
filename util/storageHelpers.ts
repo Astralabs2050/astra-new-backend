@@ -1,6 +1,6 @@
 import cloudinary from "./cloudinary";
 
-export const uploadImageToS3 = async (
+export const uploadImageToCloudinary = async (
   mediaType: string,
   data?: any,
   id?: string,
