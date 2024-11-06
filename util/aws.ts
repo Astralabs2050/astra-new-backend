@@ -10,7 +10,7 @@ const s3 = new AWS.S3({
 export const uploadImageToS3 = async (
   mediaType: string,
   data: Buffer | string,
-  id?: string
+  id?: string,
 ): Promise<{
   success: boolean;
   url?: string;
@@ -22,7 +22,8 @@ export const uploadImageToS3 = async (
 
   try {
     // Check if the data is a Base64-encoded string
-    const isBase64 = typeof data === "string" && /^data:image\/\w+;base64,/.test(data);
+    const isBase64 =
+      typeof data === "string" && /^data:image\/\w+;base64,/.test(data);
 
     let fileData;
     if (isBase64) {

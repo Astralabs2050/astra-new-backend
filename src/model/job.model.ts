@@ -66,5 +66,4 @@ export class JobModel extends Model {
     onDelete: "CASCADE",
   })
   design!: DesignModel;
-
 }

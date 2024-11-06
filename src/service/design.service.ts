@@ -3,7 +3,7 @@ import { creatorType, DesignModel } from "../model/design.model";
 import { MediaModel } from "../model/media.model";
 import { sequelize } from "../db"; // Import your sequelize instance
 import { uploadImageToS3 } from "../../util/aws";
-import { PieceModel } from "../model";
+import { PieceModel, UsersModel } from "../model";
 
 class DesignClass {
   // Method to generate new fashion design iterations
@@ -43,6 +43,13 @@ class DesignClass {
 
       // Extract the URLs of the generated images from the response
       const imageUrls = response.data.data.map((image: any) => image.url);
+      //check if the use exists
+      const userExists = await UsersModel.findByPk(userId);
+      if (!userExists)
+        return {
+          status: false,
+          message: "User ID not found in the database.",
+        };
 
       // Create a new design in the database within the transaction
       const newDesign = await DesignModel.create(
@@ -132,7 +139,7 @@ class DesignClass {
       const uploadPromises = images.map((image: any) =>
         uploadImageToS3("UPLOAD_DESIGN_IMAGES", image, userId),
       );
-console.log("uploadPromises",uploadPromises)
+      console.log("uploadPromises", uploadPromises);
       const imageResults = await Promise.all(uploadPromises);
 
       // Filter out failed uploads and log if any uploads failed
@@ -275,11 +282,7 @@ console.log("uploadPromises",uploadPromises)
       // Upload All Images
       const uploadResults = await Promise.all(
         allUploads.map((upload) =>
-          uploadImageToS3(
-            upload.view || "PRINT",
-            upload.image,
-            upload.pieceId,
-          ),
+          uploadImageToS3(upload.view || "PRINT", upload.image, upload.pieceId),
         ),
       );
 

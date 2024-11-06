@@ -86,9 +86,9 @@ class jobService {
     }
   };
 
-  public applyForJob = async(jobId:string,userId:string)=>{
+  public applyForJob = async (jobId: string, userId: string) => {
     const transaction = await sequelize.transaction();
-    try{
+    try {
       //check if the job is valid
       const job = await JobModel.findOne({
         where: { id: jobId },
@@ -129,11 +129,11 @@ class jobService {
         status: true,
         data: newApplication,
       };
-    }catch(error){
+    } catch (error) {
       console.error("Error fetching jobs:", error);
       throw error;
     }
-  }
+  };
 }
 
 const JobService = new jobService();
