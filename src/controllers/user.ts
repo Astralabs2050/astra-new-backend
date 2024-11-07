@@ -99,12 +99,20 @@ class User {
           id,
         },
       });
+      // remove some confidential details
+      delete userExists?.dataValues["password"];
+      delete userExists?.dataValues["otp"];
+
       if (userExists) {
-        const profileImg = await getSingleUploadedMedia(
+        let profileImg 
+         profileImg = await getSingleUploadedMedia(
           userExists?.id,
           "PROFILE_IMAGE",
           "user",
         );
+        if(!profileImg['success']){
+          profileImg = null
+        }
         return res.json({
           status: true,
           message: "user found",
