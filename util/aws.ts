@@ -1,5 +1,6 @@
 import AWS from "aws-sdk";
 import https from "https";
+import sharp from "sharp"; // Image optimization library
 
 // Configure the AWS SDK
 const s3 = new AWS.S3({
@@ -34,7 +35,7 @@ export const uploadImageToS3 = async (
   const fileName = `${mediaType}_${id || randomString}`;
 
   try {
-    let fileData;
+    let fileData: Buffer;
 
     if (typeof data === "string" && data.startsWith("http")) {
       // Fetch image from URL if data is a URL
@@ -50,16 +51,22 @@ export const uploadImageToS3 = async (
       // Use buffer directly if data is already a Buffer
       fileData = data;
     } else {
-      throw new Error(
-        "Invalid data format. Expected URL, Base64 string, or Buffer.",
-      );
+      throw new Error("Invalid data format. Expected URL, Base64 string, or Buffer.");
+    }
+
+    // Optionally compress image if it's JPEG or PNG
+    if (mediaType === "image/jpeg" || mediaType === "image/png") {
+      fileData = await sharp(fileData)
+        .resize(1024, 1024, { fit: "inside" }) // Resize to fit within 1024x1024px
+        .toFormat(mediaType === "image/jpeg" ? "jpeg" : "png", { quality: 80 })
+        .toBuffer();
     }
 
     const params: AWS.S3.PutObjectRequest = {
       Bucket: process.env.AWS_S3_BUCKET_NAME!,
       Key: fileName,
       Body: fileData,
-      ContentType: mediaType, // e.g., 'image/png' or 'image/jpeg'
+      ContentType: mediaType,
       ACL: "public-read",
     };
 
@@ -69,11 +76,12 @@ export const uploadImageToS3 = async (
       success: true,
       url: result.Location,
     };
-  } catch (error) {
-    console.error("Error uploading image to S3:", error);
+  } catch (error:any) {
+    const errorMessage = `Error ${typeof data === "string" && data.startsWith("http") ? "fetching image from URL" : "processing image"}: ${error.message}`;
+    console.error(errorMessage, error);
     return {
       success: false,
-      message: "Error uploading image",
+      message: errorMessage,
       error,
     };
   }
