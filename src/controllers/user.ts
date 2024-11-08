@@ -7,8 +7,8 @@ import {
 import { AuthService } from "../service/auth.service";
 
 class User {
-  private authService: AuthService
-  constructor(){
+  private authService: AuthService;
+  constructor() {
     this.authService = new AuthService();
   }
   public uploadProfileImage = async (req: any, res: Response) => {
@@ -41,10 +41,10 @@ class User {
   };
   public getSelf = async (req: any, res: Response) => {
     const { id } = req?.user;
-    try{
-      const response = await this.authService.getAuthUser(id)
-      return res.json(response )
-    }catch(err:any){
+    try {
+      const response = await this.authService.getAuthUser(id);
+      return res.json(response);
+    } catch (err: any) {
       return res.json({
         status: false,
         message: err,

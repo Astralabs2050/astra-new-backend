@@ -51,7 +51,9 @@ export const uploadImageToS3 = async (
       // Use buffer directly if data is already a Buffer
       fileData = data;
     } else {
-      throw new Error("Invalid data format. Expected URL, Base64 string, or Buffer.");
+      throw new Error(
+        "Invalid data format. Expected URL, Base64 string, or Buffer.",
+      );
     }
 
     // Optionally compress image if it's JPEG or PNG
@@ -76,8 +78,12 @@ export const uploadImageToS3 = async (
       success: true,
       url: result.Location,
     };
-  } catch (error:any) {
-    const errorMessage = `Error ${typeof data === "string" && data.startsWith("http") ? "fetching image from URL" : "processing image"}: ${error.message}`;
+  } catch (error: any) {
+    const errorMessage = `Error ${
+      typeof data === "string" && data.startsWith("http")
+        ? "fetching image from URL"
+        : "processing image"
+    }: ${error.message}`;
     console.error(errorMessage, error);
     return {
       success: false,
