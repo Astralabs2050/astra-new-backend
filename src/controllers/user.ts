@@ -4,65 +4,13 @@ import {
   getSingleUploadedMedia,
   uploadSingleMedia,
 } from "../../util/helperFunctions";
+import { AuthService } from "../service/auth.service";
 
 class User {
-  public getUser = async (req: Request, res: Response) => {
-    const { userType, level } = req.params;
-    try {
-      let users: any[];
-
-      if (userType === "staff") {
-        users = await UsersModel.findAll({
-          where: {
-            userType,
-          },
-        });
-      } else if (userType === "student") {
-        users = await UsersModel.findAll({
-          where: {
-            userType,
-            level,
-          },
-        });
-      } else {
-        users = await UsersModel.findAll();
-      }
-
-      if (users.length === 0) {
-        return res.json({
-          status: false,
-          message: "No users found",
-        });
-      }
-
-      const userData = [];
-      for (const user of users) {
-        const profileImg = await getSingleUploadedMedia(
-          user.dataValues?.id,
-          "PROFILE_IMAGE",
-          "user",
-        );
-        const userDataItem = {
-          ...user.dataValues,
-          profileImg,
-        };
-        userData.push(userDataItem);
-      }
-
-      return res.json({
-        status: true,
-        message: `${users.length} users found`,
-        data: userData,
-      });
-    } catch (err: any) {
-      console.log(err, "error");
-      return res.json({
-        status: false,
-        message: err.message || "Internal Server Error",
-      });
-    }
-  };
-
+  private authService: AuthService
+  constructor(){
+    this.authService = new AuthService();
+  }
   public uploadProfileImage = async (req: any, res: Response) => {
     try {
       const { user, link } = req.body;
@@ -93,41 +41,10 @@ class User {
   };
   public getSelf = async (req: any, res: Response) => {
     const { id } = req?.user;
-    try {
-      const userExists = await UsersModel.findOne({
-        where: {
-          id,
-        },
-      });
-      // remove some confidential details
-      delete userExists?.dataValues["password"];
-      delete userExists?.dataValues["otp"];
-
-      if (userExists) {
-        let profileImg;
-        profileImg = await getSingleUploadedMedia(
-          userExists?.id,
-          "PROFILE_IMAGE",
-          "user",
-        );
-        if (!profileImg["success"]) {
-          profileImg = null;
-        }
-        return res.json({
-          status: true,
-          message: "user found",
-          data: {
-            ...userExists.dataValues,
-            profileImg,
-          },
-        });
-      } else {
-        return res.json({
-          status: false,
-          message: "user not found",
-        });
-      }
-    } catch (err) {
+    try{
+      const response = await this.authService.getAuthUser(id)
+      return res.json(response )
+    }catch(err:any){
       return res.json({
         status: false,
         message: err,
