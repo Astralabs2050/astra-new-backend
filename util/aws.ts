@@ -33,7 +33,6 @@ export const uploadImageToS3 = async (
 }> => {
   const randomString = Math.ceil(1000000000 * Math.random()).toString();
   const fileName = `${mediaType}_${id || randomString}`;
-
   try {
     let fileData: Buffer;
 
