@@ -147,7 +147,7 @@ export class AuthService {
       );
       if (doesPasswordMatch) {
         const jwtSecret: any = process.env.JWT_SECRET;
-        console.log("jwtSecret", jwtSecret);
+        
         const expirationTime = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
         const token = jwt.sign({ data: userExists }, jwtSecret, {
           expiresIn: expirationTime,
