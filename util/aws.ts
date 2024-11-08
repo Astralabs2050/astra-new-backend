@@ -23,7 +23,7 @@ const fetchImageBufferFromUrl = (url: string): Promise<Buffer> => {
 export const uploadImageToS3 = async (
   mediaType: string,
   data: Buffer | string,
-  id?: string
+  id?: string,
 ): Promise<{
   success: boolean;
   url?: string;
@@ -39,7 +39,10 @@ export const uploadImageToS3 = async (
     if (typeof data === "string" && data.startsWith("http")) {
       // Fetch image from URL if data is a URL
       fileData = await fetchImageBufferFromUrl(data);
-    } else if (typeof data === "string" && /^data:image\/\w+;base64,/.test(data)) {
+    } else if (
+      typeof data === "string" &&
+      /^data:image\/\w+;base64,/.test(data)
+    ) {
       // Handle Base64-encoded string
       const base64Data = data.replace(/^data:image\/\w+;base64,/, "");
       fileData = Buffer.from(base64Data, "base64");
@@ -47,7 +50,9 @@ export const uploadImageToS3 = async (
       // Use buffer directly if data is already a Buffer
       fileData = data;
     } else {
-      throw new Error("Invalid data format. Expected URL, Base64 string, or Buffer.");
+      throw new Error(
+        "Invalid data format. Expected URL, Base64 string, or Buffer.",
+      );
     }
 
     const params: AWS.S3.PutObjectRequest = {

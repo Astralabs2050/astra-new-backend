@@ -104,14 +104,14 @@ class User {
       delete userExists?.dataValues["otp"];
 
       if (userExists) {
-        let profileImg 
-         profileImg = await getSingleUploadedMedia(
+        let profileImg;
+        profileImg = await getSingleUploadedMedia(
           userExists?.id,
           "PROFILE_IMAGE",
           "user",
         );
-        if(!profileImg['success']){
-          profileImg = null
+        if (!profileImg["success"]) {
+          profileImg = null;
         }
         return res.json({
           status: true,

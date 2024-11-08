@@ -16,7 +16,6 @@ class DesignClass {
   ) => {
     const transaction = await sequelize.transaction(); // Start a new transaction
     try {
-     
       const apiKey = process.env.OPEN_API_KEY;
       const url = "https://api.openai.com/v1/images/generations";
 
