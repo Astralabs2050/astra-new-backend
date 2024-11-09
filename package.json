@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jimp": "^0.2.28",
     "@types/nodemailer": "^6.4.16",
     "prettier": "3.0.3",
     "sequelize-cli": "^6.6.2",
@@ -37,6 +38,7 @@
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "get-port": "^7.0.0",
+    "jimp": "^1.6.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.6.1",
     "node-cron": "^3.0.3",
@@ -49,7 +51,6 @@
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.37.3",
     "sequelize-typescript": "^2.1.6",
-    "sharp": "^0.33.5",
     "sib-api-v3-sdk": "^8.5.0",
     "smtp-client": "^0.4.0",
     "socket.io": "^4.8.0",

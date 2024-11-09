@@ -1,6 +1,5 @@
 import AWS from "aws-sdk";
 import https from "https";
-import sharp from "sharp"; // Image optimization library
 
 // Configure the AWS SDK
 const s3 = new AWS.S3({
@@ -53,14 +52,6 @@ export const uploadImageToS3 = async (
       throw new Error(
         "Invalid data format. Expected URL, Base64 string, or Buffer.",
       );
-    }
-
-    // Optionally compress image if it's JPEG or PNG
-    if (mediaType === "image/jpeg" || mediaType === "image/png") {
-      fileData = await sharp(fileData)
-        .resize(1024, 1024, { fit: "inside" }) // Resize to fit within 1024x1024px
-        .toFormat(mediaType === "image/jpeg" ? "jpeg" : "png", { quality: 80 })
-        .toBuffer();
     }
 
     const params: AWS.S3.PutObjectRequest = {
