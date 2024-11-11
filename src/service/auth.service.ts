@@ -489,20 +489,44 @@ export class AuthService {
   }
   public async getAuthUser(id: string) {
     try {
-      const user = await UsersModel.findOne({
+      const user:any = await UsersModel.findOne({
         where: {
           id,
         },
+        include: [
+          {
+            model: CreatorModel,
+            as: "creator", // Alias defined in the association
+            required: false, // Make it optional in case the user is not a creator
+          },
+          {
+            model: BrandModel,
+            as: "brand", // Alias defined in the association
+            required: false, // Make it optional in case the user is not a brand
+          },
+          {
+            model: MediaModel, // Include MediaModel to get profile picture
+            where: {
+              mediaType: "PROFILE_PICTURE", // Filter by mediaType = "PROFILE_PICTURE"
+            },
+            required: false, // Make it optional in case the user doesn't have a profile picture
+          },
+        ],
       });
+  
       if (!user) {
         return {
           message: "User not found",
           status: false,
         };
       }
+  
       return {
-        message: "user found",
-        data: user,
+        message: "User found",
+        data: {
+          ...user.toJSON(),
+
+        },
         status: true,
       };
     } catch (error: any) {
@@ -512,4 +536,6 @@ export class AuthService {
       };
     }
   }
+  
+  
 }

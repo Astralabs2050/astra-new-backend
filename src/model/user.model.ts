@@ -7,13 +7,19 @@ import {
   AllowNull,
   Default,
   Index,
+  HasOne,
+  HasMany,
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid";
+import { CreatorModel } from "./creator.model";
+import { BrandModel } from "./brand.model";
 
 enum userType {
   brand = "brand",
   creator = "creator",
 }
+
+import { MediaModel } from "./media.model"; // Adjust the import path as needed
 
 @Table({ timestamps: true, tableName: "users" })
 export class UsersModel extends Model {
@@ -21,6 +27,25 @@ export class UsersModel extends Model {
   @Default(uuidv4)
   @Column(DataType.UUID)
   id!: string;
+
+  @HasOne(() => CreatorModel, {
+    foreignKey: "userId", // Reference to the user's id
+    as: "creator",        // Alias for the association
+  })
+  creator?: CreatorModel;
+
+  @HasOne(() => BrandModel, {
+    foreignKey: "userId",  // Reference to the user's id
+    as: "brand",           // Alias for the association
+  })
+  brand?: BrandModel;
+
+  // Add the HasMany association for MediaModel
+  @HasMany(() => MediaModel, {
+    foreignKey: "userId",  // Reference to the user's id in the MediaModel
+    as: "media",           // Alias for the media association
+  })
+  media?: MediaModel[];
 
   @Index({ name: "combined-key-index1", unique: true })
   @AllowNull(false)
