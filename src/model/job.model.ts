@@ -14,12 +14,6 @@ import { v4 as uuidv4 } from "uuid";
 import { DesignModel } from "./design.model";
 import { UsersModel } from "./user.model";
 
-export enum TimelineType {
-  MORE_SIX_MONTHS = "more_six_months",
-  THREE_SIX_MONTHS = "three_six_months",
-  ONE_THREE_MONTHS = "one_three_months",
-  ONE_THREE_WEEKS = "one_three_weeks",
-}
 
 @Table({ timestamps: true, tableName: "jobs" })
 export class JobModel extends Model {
@@ -32,8 +26,8 @@ export class JobModel extends Model {
   @Column(DataType.TEXT)
   description!: string;
 
-  @Column(DataType.ENUM(...Object.values(TimelineType)))
-  timeline?: TimelineType;
+  @Column(DataType.DATE)
+  timeline?: Date;
 
   @Default(false)
   @Column(DataType.BOOLEAN)

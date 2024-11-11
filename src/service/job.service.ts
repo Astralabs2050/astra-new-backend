@@ -33,6 +33,13 @@ class jobService {
       }
 
       // Create job
+      console.log("new job", {
+        description,
+        timeline,
+        manufacturer,
+        designId,
+        userId,
+      })
       const newJob = await JobModel.create(
         {
           description,

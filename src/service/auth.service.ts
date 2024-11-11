@@ -297,10 +297,13 @@ export class AuthService {
             await Promise.all(
               newProjects.map(async (project: any, index: number) => {
                 // Upload project images (if available)
+                console.log("data.projects[index]?.image",data.projects[index]?.image)
                 const uploadPromises =
                   data.projects[index]?.image?.map((image: any) =>
                     uploadImageToS3("PROJECT_IMAGE", image, project.id),
                   ) ?? [];
+
+                  console.log("uploadPromises",uploadPromises)
 
                 // Wait for all image upload promises to resolve
                 const uploadResults = await Promise.all(uploadPromises);
