@@ -1,5 +1,5 @@
 import { sequelize } from "../db";
-import { DesignModel, JobModel, UsersModel } from "../model";
+import { DesignModel, JobModel, MediaModel, PieceModel, UsersModel } from "../model";
 import { JobApplicationModel } from "../model/jobApplication.model";
 
 class jobService {
@@ -78,6 +78,16 @@ class jobService {
           {
             model: DesignModel,
             as: "design",
+            include: [
+              {
+                model: MediaModel,
+                as: "media", // Include all media associated with the design
+              },
+              {
+                model: PieceModel,
+                as: "pieces", // Include all pieces associated with the design
+              },
+            ],
           },
           {
             model: UsersModel,
@@ -85,13 +95,18 @@ class jobService {
           },
         ],
       });
-
-      return jobs;
+  
+      return {
+        status: true,
+        message: "gotten all jobs",
+        data: jobs,
+      };
     } catch (error: any) {
       console.error("Error fetching jobs:", error);
       throw error;
     }
   };
+  
 
   public applyForJob = async (jobId: string, userId: string) => {
     const transaction = await sequelize.transaction();
