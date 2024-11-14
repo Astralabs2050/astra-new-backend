@@ -39,5 +39,5 @@ import {
 
     @AllowNull(false) // Ensures description cannot be null
     @Column(DataType.STRING)
-    location!: string;
+    ocation!: string;
   }
