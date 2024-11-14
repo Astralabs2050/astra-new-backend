@@ -39,5 +39,5 @@ import {
 
     @AllowNull(false) // Ensures description cannot be null
     @Column(DataType.STRING)
-    ocation!: string;
+    occasion!: string;
   }
