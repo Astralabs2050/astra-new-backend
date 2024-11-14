@@ -1,5 +1,3 @@
 class MeasurementService {
-    public uploadMeasurements = async ()=>{
-
-    }
+  public uploadMeasurements = async () => {};
 }

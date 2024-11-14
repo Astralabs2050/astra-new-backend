@@ -30,20 +30,20 @@ export class UsersModel extends Model {
 
   @HasOne(() => CreatorModel, {
     foreignKey: "userId", // Reference to the user's id
-    as: "creator",        // Alias for the association
+    as: "creator", // Alias for the association
   })
   creator?: CreatorModel;
 
   @HasOne(() => BrandModel, {
-    foreignKey: "userId",  // Reference to the user's id
-    as: "brand",           // Alias for the association
+    foreignKey: "userId", // Reference to the user's id
+    as: "brand", // Alias for the association
   })
   brand?: BrandModel;
 
   // Add the HasMany association for MediaModel
   @HasMany(() => MediaModel, {
-    foreignKey: "userId",  // Reference to the user's id in the MediaModel
-    as: "media",           // Alias for the media association
+    foreignKey: "userId", // Reference to the user's id in the MediaModel
+    as: "media", // Alias for the media association
   })
   media?: MediaModel[];
 

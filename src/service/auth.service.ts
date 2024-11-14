@@ -147,7 +147,7 @@ export class AuthService {
       );
       if (doesPasswordMatch) {
         const jwtSecret: any = process.env.JWT_SECRET;
-        
+
         const expirationTime = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
         const token = jwt.sign({ data: userExists }, jwtSecret, {
           expiresIn: expirationTime,
@@ -297,13 +297,16 @@ export class AuthService {
             await Promise.all(
               newProjects.map(async (project: any, index: number) => {
                 // Upload project images (if available)
-                console.log("data.projects[index]?.image",data.projects[index]?.image)
+                console.log(
+                  "data.projects[index]?.image",
+                  data.projects[index]?.image,
+                );
                 const uploadPromises =
                   data.projects[index]?.image?.map((image: any) =>
                     uploadImageToS3("PROJECT_IMAGE", image, project.id),
                   ) ?? [];
 
-                  console.log("uploadPromises",uploadPromises)
+                console.log("uploadPromises", uploadPromises);
 
                 // Wait for all image upload promises to resolve
                 const uploadResults = await Promise.all(uploadPromises);
@@ -489,7 +492,7 @@ export class AuthService {
   }
   public async getAuthUser(id: string) {
     try {
-      const user:any = await UsersModel.findOne({
+      const user: any = await UsersModel.findOne({
         where: {
           id,
         },
@@ -513,19 +516,18 @@ export class AuthService {
           },
         ],
       });
-  
+
       if (!user) {
         return {
           message: "User not found",
           status: false,
         };
       }
-  
+
       return {
         message: "User found",
         data: {
           ...user.toJSON(),
-
         },
         status: true,
       };
@@ -536,6 +538,4 @@ export class AuthService {
       };
     }
   }
-  
-  
 }

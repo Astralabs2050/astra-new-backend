@@ -1,5 +1,11 @@
 import { sequelize } from "../db";
-import { DesignModel, JobModel, MediaModel, PieceModel, UsersModel } from "../model";
+import {
+  DesignModel,
+  JobModel,
+  MediaModel,
+  PieceModel,
+  UsersModel,
+} from "../model";
 import { JobApplicationModel } from "../model/jobApplication.model";
 
 class jobService {
@@ -39,7 +45,7 @@ class jobService {
         manufacturer,
         designId,
         userId,
-      })
+      });
       const newJob = await JobModel.create(
         {
           description,
@@ -76,7 +82,7 @@ class jobService {
         },
         include: [
           {
-            model: DesignModel,
+            model:  DesignModel,
             as: "design",
             include: [
               {
@@ -95,7 +101,7 @@ class jobService {
           },
         ],
       });
-  
+
       return {
         status: true,
         message: "gotten all jobs",
@@ -106,7 +112,6 @@ class jobService {
       throw error;
     }
   };
-  
 
   public applyForJob = async (jobId: string, userId: string) => {
     const transaction = await sequelize.transaction();

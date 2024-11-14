@@ -14,7 +14,6 @@ import { v4 as uuidv4 } from "uuid";
 import { DesignModel } from "./design.model";
 import { UsersModel } from "./user.model";
 
-
 @Table({ timestamps: true, tableName: "jobs" })
 export class JobModel extends Model {
   @PrimaryKey

@@ -28,5 +28,4 @@ designRouter.patch(
   DesignController.additionalInfromation,
 );
 
-
 export default designRouter;
