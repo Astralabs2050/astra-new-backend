@@ -127,7 +127,7 @@ class jobService {
           status: false,
         };
       }
-
+     
       // Check if the user has already applied for this job
       const existingApplication = await JobApplicationModel.findOne({
         where: { jobId, userId },

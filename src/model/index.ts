@@ -8,6 +8,7 @@ import { DesignModel } from "./design.model";
 import { PieceModel } from "./piece.model";
 import { JobModel } from "./job.model";
 import { Waitlist } from "./waitlist.model";
+import { JobApplicationModel } from "./jobApplication.model";
 export {
   UsersModel,
   MediaModel,
@@ -18,5 +19,6 @@ export {
   DesignModel,
   PieceModel,
   JobModel,
-  Waitlist
+  Waitlist,
+  JobApplicationModel
 };
