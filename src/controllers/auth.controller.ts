@@ -102,4 +102,29 @@ export class AuthController {
       };
     }
   };
+  public forgotPassword = async (req: Request, res: Response) => {
+    try{
+      const {email} = req.body
+      const response = await this.authService.forgetPassword(email)
+      return res.json(response);
+    }catch(error:any){
+      return {
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      };
+    }
+  }
+
+  public resetPasswordLink = async(req: Request, res: Response) =>{
+    try{
+     const response = await this.authService.resetPasswordLink(req.body)
+     return res.json(response)
+    }catch(error:any){
+      return {
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      };
+    }
+  }
 }
+

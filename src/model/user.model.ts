@@ -74,6 +74,18 @@ export class UsersModel extends Model {
 
   @Default(false)
   @Column(DataType.BOOLEAN)
+  isOtpVerified?: boolean;
+
+  @Default(Date.now) // Automatically set to the current timestamp
+  @Column(DataType.DATE)
+  otpCreatedAt?: Date; // Track when the OTP was generated
+
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  isOtpExp?: boolean;
+
+  @Default(false)
+  @Column(DataType.BOOLEAN)
   isAdmin?: boolean;
 
   @AllowNull(true)
@@ -84,5 +96,14 @@ export class UsersModel extends Model {
     const values = { ...this.get() } as any;
     delete values.password;
     return values;
+  }
+
+  // Computed method to check if OTP is expired
+  isOtpExpired(): boolean {
+    if (!this.otpCreatedAt) {
+      return true; // Consider it expired if there's no timestamp
+    }
+    const expirationTime = new Date(this.otpCreatedAt.getTime() + 30 * 60 * 1000); // 30 minutes in milliseconds
+    return new Date() > expirationTime;
   }
 }
