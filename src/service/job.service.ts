@@ -1,6 +1,7 @@
 import { sequelize } from "../db";
 import {
   DesignModel,
+  JobApplicationProjects,
   JobModel,
   MediaModel,
   PieceModel,
@@ -143,6 +144,7 @@ class jobService {
   
       // Validate that the project IDs exist (if provided)
       if (data?.projectIds && Array.isArray(data.projectIds)) {
+        // Check each project ID to see if it exists
         for (const projectId of data.projectIds) {
           const project = await ProjectModel.findOne({
             where: { id: projectId },
@@ -157,17 +159,27 @@ class jobService {
         }
       }
   
-      // Create the job application and store the project IDs in it
+      // Create the job application
       const newApplication = await JobApplicationModel.create(
         {
           userId,
           jobId: data?.jobId,
           amount: data?.amount,
           minAmount: data?.minAmount,
-          projects: data?.projectIds, // Store the project IDs in the job application
         },
         { transaction },
       );
+  
+      // If projectIds are provided, associate them with the job application via the join table
+      if (data?.projectIds && Array.isArray(data.projectIds)) {
+        const projectAssociations = data.projectIds.map((projectId: string) => ({
+          jobApplicationId: newApplication.id,
+          projectId,
+        }));
+  
+        // Create associations in the join table
+        await JobApplicationProjects.bulkCreate(projectAssociations, { transaction });
+      }
   
       await transaction.commit();
   
@@ -187,8 +199,6 @@ class jobService {
     }
   };
   
-  
-
   public getJobApplicants = async (
     jobId: string,
 

@@ -8,12 +8,13 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
-  HasMany,
+  BelongsToMany,
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid";
 import { JobModel } from "./job.model";
 import { UsersModel } from "./user.model";
 import { ProjectModel } from "./project.model";
+import { JobApplicationProjects } from "./JobApplicationProjects.model";
 
 @Table({ timestamps: true, tableName: "job_applications" })
 export class JobApplicationModel extends Model {
@@ -39,6 +40,14 @@ export class JobApplicationModel extends Model {
   @Column(DataType.UUID)
   userId!: string;
 
+  @Default(false)
+  @Column(DataType.INTEGER)
+  amount!: number;
+
+  @Default(false)
+  @Column(DataType.INTEGER)
+  minAmount!: number;
+
   @BelongsTo(() => UsersModel, {
     foreignKey: "userId",
     as: "user",
@@ -46,13 +55,7 @@ export class JobApplicationModel extends Model {
   })
   user!: UsersModel;
 
-
-
-   // Add the HasMany association for MediaModel
-   @HasMany(() => ProjectModel, {
-    foreignKey: "productId", // Reference to the user's id in the MediaModel
-    as: "projects", // Alias for the media association
-  })
-  projects?: ProjectModel[];
-
+  // Define the many-to-many relationship with Project
+  @BelongsToMany(() => ProjectModel, () => JobApplicationProjects)
+  projects!: ProjectModel[];
 }

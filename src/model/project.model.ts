@@ -9,10 +9,13 @@ import {
   HasMany,
   AllowNull,
   Default,
+  BelongsToMany,
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid"; // Ensure you import uuidv4
 import { CreatorModel as Creator } from "./creator.model";
 import { MediaModel } from "./media.model";
+import { JobApplicationModel } from "./jobApplication.model";
+import { JobApplicationProjects } from "./JobApplicationProjects.model";
 
 @Table({ timestamps: true, tableName: "project" })
 export class ProjectModel extends Model {
@@ -37,6 +40,10 @@ export class ProjectModel extends Model {
 
   @Column(DataType.STRING)
   projectDescription?: string;
+
+
+  @BelongsToMany(() => JobApplicationModel, () => JobApplicationProjects)
+  jobApplications!: JobApplicationModel[];
 
   @AllowNull(true)
   @Column(DataType.JSON)
