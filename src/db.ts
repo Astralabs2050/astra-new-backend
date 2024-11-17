@@ -13,7 +13,7 @@ import {
   JobModel,
   Waitlist,
   JobApplicationModel,
-  JobApplicationProjects
+  JobApplicationProjects,
 } from "./model";
 import { dbConfig } from "../common/utility";
 
@@ -37,7 +37,7 @@ const sequelizeOptions: any = {
     JobModel,
     Waitlist,
     JobApplicationModel,
-    JobApplicationProjects
+    JobApplicationProjects,
   ],
 };
 

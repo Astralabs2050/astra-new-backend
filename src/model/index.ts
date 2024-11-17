@@ -22,5 +22,5 @@ export {
   JobModel,
   Waitlist,
   JobApplicationModel,
-  JobApplicationProjects
+  JobApplicationProjects,
 };

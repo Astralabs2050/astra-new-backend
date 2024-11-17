@@ -7,6 +7,10 @@ const jobRouter = Router();
 jobRouter.post("/create-job", isAuthenticated, JobController.createJob);
 jobRouter.get("/get-job", isAuthenticated, JobController.getJob);
 jobRouter.post("/apply-job", isAuthenticated, JobController.applyJob);
-jobRouter.get("/job-application", isAuthenticated, JobController.getJobApplicants)
+jobRouter.get(
+  "/job-application",
+  isAuthenticated,
+  JobController.getJobApplicants,
+);
 
 export default jobRouter;

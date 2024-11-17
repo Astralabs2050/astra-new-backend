@@ -32,8 +32,8 @@ class jobController {
   public applyJob = async (req: Request, res: Response) => {
     try {
       const { id } = (req as any)?.user;
-      const response = await JobService.applyForJob(req.body,id)
-      return res.json(response)
+      const response = await JobService.applyForJob(req.body, id);
+      return res.json(response);
     } catch (error: any) {
       return res.status(400).json({
         status: false,
@@ -45,10 +45,10 @@ class jobController {
   public getJobApplicants = async (req: Request, res: Response) => {
     try {
       const { id } = (req as any)?.user;
-      const {jobId} = req.body;
-    
-      const response = await JobService.getJobApplicants(jobId)
-      return res.json(response)
+      const { jobId } = req.body;
+
+      const response = await JobService.getJobApplicants(jobId);
+      return res.json(response);
     } catch (error: any) {
       return res.status(400).json({
         status: false,

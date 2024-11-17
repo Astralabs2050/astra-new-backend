@@ -40,6 +40,9 @@ authRouter.post(
   authcontroller.forgotPassword.bind(authcontroller),
 );
 
-authRouter.patch('/reset-password', authcontroller.resetPasswordLink.bind(authcontroller))
+authRouter.patch(
+  "/reset-password",
+  authcontroller.resetPasswordLink.bind(authcontroller),
+);
 
 export default authRouter;

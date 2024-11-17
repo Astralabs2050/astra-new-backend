@@ -41,7 +41,6 @@ export class ProjectModel extends Model {
   @Column(DataType.STRING)
   projectDescription?: string;
 
-
   @BelongsToMany(() => JobApplicationModel, () => JobApplicationProjects)
   jobApplications!: JobApplicationModel[];
 

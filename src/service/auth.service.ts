@@ -539,31 +539,35 @@ export class AuthService {
       };
     }
   }
-  public async forgetPassword(email: string){
-    try{
+  public async forgetPassword(email: string) {
+    try {
       //get the user
       console.log("email", email);
       const userToBeVerified: any = await UsersModel.findOne({
-        where: { email},
+        where: { email },
       });
-      if(!userToBeVerified){
+      if (!userToBeVerified) {
         return {
           status: false,
-          message:`User with email ${email} not found`
-        }
+          message: `User with email ${email} not found`,
+        };
       }
       const otp = uuidv4().substring(0, 4);
       await userToBeVerified.update({
-         otp,
-         isOtpExp:false,
-         otpCreatedAt: new Date() });
+        otp,
+        isOtpExp: false,
+        otpCreatedAt: new Date(),
+      });
       await sendEmail(email, "Resend OTP", `your reset otp is ${otp}`);
-      return { status: true, message: `your reset password link has been sent to email` };
-    }catch(err:any){
+      return {
+        status: true,
+        message: `your reset password link has been sent to email`,
+      };
+    } catch (err: any) {
       return {
         message: err.message,
-        status: false
-      }
+        status: false,
+      };
     }
   }
   public async resetPasswordLink(data: any) {
@@ -574,19 +578,19 @@ export class AuthService {
           otp: data.otp,
           email: data.email,
           otpCreatedAt: {
-          [Op.gte]: new Date(new Date().getTime() - 60 * 60 * 1000), // OTP validity (1 hour)
-        },
+            [Op.gte]: new Date(new Date().getTime() - 60 * 60 * 1000), // OTP validity (1 hour)
+          },
           isOtpExp: false,
         },
       });
-  
+
       if (!validToken) {
         return {
           status: false,
           message: "Invalid OTP or Token expired",
         };
       }
-  
+
       // Validate that password is provided
       if (!data?.password) {
         return {
@@ -594,17 +598,17 @@ export class AuthService {
           message: "Password is required",
         };
       }
-  
+
       // Hash the password
       const salt: string = await bcrypt.genSalt(15);
       const hashedPassword: string = await bcrypt.hash(data.password, salt);
-  
+
       // Update the password
       await validToken.update({
         password: hashedPassword,
-        isOtpExp:true
+        isOtpExp: true,
       });
-  
+
       return {
         message: "Password updated successfully",
         status: true,
@@ -616,6 +620,4 @@ export class AuthService {
       };
     }
   }
-  
-  }
-
+}

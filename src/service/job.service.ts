@@ -84,7 +84,7 @@ class jobService {
         },
         include: [
           {
-            model:  DesignModel,
+            model: DesignModel,
             as: "design",
             include: [
               {
@@ -122,26 +122,26 @@ class jobService {
       const job = await JobModel.findOne({
         where: { id: data?.jobId },
       });
-  
+
       if (!job) {
         return {
           message: "No job found",
           status: false,
         };
       }
-  
+
       // Check if the user has already applied for this job
       const existingApplication = await JobApplicationModel.findOne({
         where: { jobId: data?.jobId, userId },
       });
-  
+
       if (existingApplication) {
         return {
           message: "You have already applied for this job",
           status: false,
         };
       }
-  
+
       // Validate that the project IDs exist (if provided)
       if (data?.projectIds && Array.isArray(data.projectIds)) {
         // Check each project ID to see if it exists
@@ -149,7 +149,7 @@ class jobService {
           const project = await ProjectModel.findOne({
             where: { id: projectId },
           });
-  
+
           if (!project) {
             return {
               message: `Invalid project ID: ${projectId}`,
@@ -158,7 +158,7 @@ class jobService {
           }
         }
       }
-  
+
       // Create the job application
       const newApplication = await JobApplicationModel.create(
         {
@@ -169,20 +169,24 @@ class jobService {
         },
         { transaction },
       );
-  
+
       // If projectIds are provided, associate them with the job application via the join table
       if (data?.projectIds && Array.isArray(data.projectIds)) {
-        const projectAssociations = data.projectIds.map((projectId: string) => ({
-          jobApplicationId: newApplication.id,
-          projectId,
-        }));
-  
+        const projectAssociations = data.projectIds.map(
+          (projectId: string) => ({
+            jobApplicationId: newApplication.id,
+            projectId,
+          }),
+        );
+
         // Create associations in the join table
-        await JobApplicationProjects.bulkCreate(projectAssociations, { transaction });
+        await JobApplicationProjects.bulkCreate(projectAssociations, {
+          transaction,
+        });
       }
-  
+
       await transaction.commit();
-  
+
       return {
         message: "Application created successfully",
         status: true,
@@ -198,24 +202,21 @@ class jobService {
       };
     }
   };
-  
-  public getJobApplicants = async (
-    jobId: string,
 
-  ) => {
+  public getJobApplicants = async (jobId: string) => {
     try {
       // Check if the job exists
       const job = await JobModel.findOne({
         where: { id: jobId },
       });
-  
+
       if (!job) {
         return {
           message: "No job found",
           status: false,
         };
       }
-  
+
       // Get applications for the job with pagination
       const { rows: jobApplications, count: totalApplications } =
         await JobApplicationModel.findAndCountAll({
@@ -226,21 +227,18 @@ class jobService {
               as: "user",
             },
           ],
-         
         });
-  
+
       return {
         status: true,
         message: "Got all job applicants",
         data: jobApplications,
-        
       };
     } catch (error) {
       console.error("Error getting job applications:", error);
       throw error;
     }
   };
-  
 }
 
 const JobService = new jobService();

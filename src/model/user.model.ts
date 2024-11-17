@@ -103,7 +103,9 @@ export class UsersModel extends Model {
     if (!this.otpCreatedAt) {
       return true; // Consider it expired if there's no timestamp
     }
-    const expirationTime = new Date(this.otpCreatedAt.getTime() + 30 * 60 * 1000); // 30 minutes in milliseconds
+    const expirationTime = new Date(
+      this.otpCreatedAt.getTime() + 30 * 60 * 1000,
+    ); // 30 minutes in milliseconds
     return new Date() > expirationTime;
   }
 }
