@@ -4,6 +4,7 @@ import {
   JobModel,
   MediaModel,
   PieceModel,
+  ProjectModel,
   UsersModel,
 } from "../model";
 import { JobApplicationModel } from "../model/jobApplication.model";
@@ -113,54 +114,123 @@ class jobService {
     }
   };
 
-  public applyForJob = async (jobId: string, userId: string) => {
+  public applyForJob = async (data: any, userId: string) => {
     const transaction = await sequelize.transaction();
     try {
-      //check if the job is valid
+      // Check if the job is valid
       const job = await JobModel.findOne({
-        where: { id: jobId },
+        where: { id: data?.jobId },
       });
-
+  
       if (!job) {
         return {
           message: "No job found",
           status: false,
         };
       }
-     
+  
       // Check if the user has already applied for this job
       const existingApplication = await JobApplicationModel.findOne({
-        where: { jobId, userId },
+        where: { jobId: data?.jobId, userId },
       });
-
+  
       if (existingApplication) {
         return {
           message: "You have already applied for this job",
           status: false,
         };
       }
-
-      // Create application
+  
+      // Validate that the project IDs exist (if provided)
+      if (data?.projectIds && Array.isArray(data.projectIds)) {
+        for (const projectId of data.projectIds) {
+          const project = await ProjectModel.findOne({
+            where: { id: projectId },
+          });
+  
+          if (!project) {
+            return {
+              message: `Invalid project ID: ${projectId}`,
+              status: false,
+            };
+          }
+        }
+      }
+  
+      // Create the job application and store the project IDs in it
       const newApplication = await JobApplicationModel.create(
         {
           userId,
-          jobId,
+          jobId: data?.jobId,
+          amount: data?.amount,
+          minAmount: data?.minAmount,
+          projects: data?.projectIds, // Store the project IDs in the job application
         },
         { transaction },
       );
-
+  
       await transaction.commit();
-
+  
       return {
         message: "Application created successfully",
         status: true,
         data: newApplication,
       };
+    } catch (error: any) {
+      await transaction.rollback(); // Rollback transaction on error
+      console.error("Error applying for jobs:", error);
+      return {
+        message: "An error occurred while applying for the job",
+        status: false,
+        error: error.message,
+      };
+    }
+  };
+  
+  
+
+  public getJobApplicants = async (
+    jobId: string,
+
+  ) => {
+    try {
+      // Check if the job exists
+      const job = await JobModel.findOne({
+        where: { id: jobId },
+      });
+  
+      if (!job) {
+        return {
+          message: "No job found",
+          status: false,
+        };
+      }
+  
+      // Get applications for the job with pagination
+      const { rows: jobApplications, count: totalApplications } =
+        await JobApplicationModel.findAndCountAll({
+          where: { jobId },
+          include: [
+            {
+              model: UsersModel,
+              as: "user",
+            },
+          ],
+         
+        });
+  
+      return {
+        status: true,
+        message: "Got all job applicants",
+        data: jobApplications,
+        
+      };
     } catch (error) {
-      console.error("Error fetching jobs:", error);
+      console.error("Error getting job applications:", error);
       throw error;
     }
   };
+  
 }
 
 const JobService = new jobService();
