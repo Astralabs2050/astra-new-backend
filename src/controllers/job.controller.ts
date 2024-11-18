@@ -29,6 +29,21 @@ class jobController {
     }
   };
 
+
+  public getEachJob = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      console.log("the job id",id)
+      const response = await JobService.getEachJob(id)
+      return res.json(response);
+    } catch (error: any) {
+      return res.status(400).json({
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      });
+    }
+  };
+
   public applyJob = async (req: Request, res: Response) => {
     try {
       const { id } = (req as any)?.user;

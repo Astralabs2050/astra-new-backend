@@ -115,6 +115,56 @@ class jobService {
     }
   };
 
+  public getEachJob = async (jobId: string) => {
+    try {
+      const job = await JobModel.findOne({
+        where: { id: jobId },
+        include: [
+          {
+            model: DesignModel,
+            as: "design",
+            include: [
+              {
+                model: MediaModel,
+                as: "media",
+              },
+              {
+                model: PieceModel,
+                as: "pieces",
+                include: [
+                  {
+                    model: MediaModel,
+                    as: "media",
+                  },
+                ]
+              },
+            ],
+          },
+          {
+            model: UsersModel,
+            as: "user",
+          },
+        ],
+      });
+
+      if (!job) {
+        return {
+          message: "No job found",
+          status: false,
+        };
+      }
+
+      return {
+        status: true,
+        message: "gotten job",
+        data: job,
+      };
+    } catch (error: any) {
+      console.error("Error fetching job:", error);
+      throw error;
+    }
+  }
+
   public getAllJobs = async () => {
     try{
       const jobs = await JobModel.findAll({
@@ -138,7 +188,7 @@ class jobService {
         message: "gotten all jobs",
         data: jobs,
       };
-      
+
     }catch(error: any) {
       
     }
