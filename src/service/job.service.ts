@@ -115,6 +115,35 @@ class jobService {
     }
   };
 
+  public getAllJobs = async () => {
+    try{
+      const jobs = await JobModel.findAll({
+        where: {
+          status: false
+        },
+        include: [
+          {
+            model: DesignModel,
+            as: "design",
+          },
+          {
+            model: UsersModel,
+            as: "user",
+          },
+        ],
+      });
+
+      return {
+        status: true,
+        message: "gotten all jobs",
+        data: jobs,
+      };
+      
+    }catch(error: any) {
+      
+    }
+  }
+
   public applyForJob = async (data: any, userId: string) => {
     const transaction = await sequelize.transaction();
     try {
