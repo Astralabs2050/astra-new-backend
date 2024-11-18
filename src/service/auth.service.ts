@@ -597,14 +597,14 @@ export class AuthService {
           },
         ],
       });
-  
+
       if (!user) {
         return {
           message: "User not found or no associated creator",
           status: false,
         };
       }
-  
+
       return {
         message: "Projects and media fetched successfully",
         status: true,
@@ -617,7 +617,7 @@ export class AuthService {
       };
     }
   }
-  
+
   public async resetPasswordLink(data: any) {
     try {
       // Check if the data exists

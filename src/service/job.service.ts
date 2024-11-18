@@ -136,7 +136,7 @@ class jobService {
                     model: MediaModel,
                     as: "media",
                   },
-                ]
+                ],
               },
             ],
           },
@@ -163,13 +163,13 @@ class jobService {
       console.error("Error fetching job:", error);
       throw error;
     }
-  }
+  };
 
   public getAllJobs = async () => {
-    try{
+    try {
       const jobs = await JobModel.findAll({
         where: {
-          status: false
+          status: false,
         },
         include: [
           {
@@ -188,11 +188,8 @@ class jobService {
         message: "gotten all jobs",
         data: jobs,
       };
-
-    }catch(error: any) {
-      
-    }
-  }
+    } catch (error: any) {}
+  };
 
   public applyForJob = async (data: any, userId: string) => {
     const transaction = await sequelize.transaction();

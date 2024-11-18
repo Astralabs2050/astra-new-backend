@@ -6,7 +6,7 @@ const userRouter = Router();
 
 userRouter.get("/get/:userType/:level", UserController.getSelf);
 userRouter.post("/upload-profile-image", UserController.uploadProfileImage);
-userRouter.get("/self",isAuthenticated, UserController.getSelf);
+userRouter.get("/self", isAuthenticated, UserController.getSelf);
 userRouter.get("/project", isAuthenticated, UserController.getProjects);
 
 export default userRouter;
