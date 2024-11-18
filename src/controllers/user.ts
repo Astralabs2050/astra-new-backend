@@ -51,6 +51,19 @@ class User {
       });
     }
   };
+
+  public getProjects = async (req: any, res: Response) => {
+    const { id } = req?.user;
+    try {
+      const response = await this.authService.getProjects(id)
+      return res.json(response);
+    } catch (err: any) {
+      return res.json({
+        status: false,
+        message: err,
+      });
+    }
+  };
 }
 
 export const UserController = new User();

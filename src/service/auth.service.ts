@@ -570,6 +570,54 @@ export class AuthService {
       };
     }
   }
+  public async getProjects(userId: string) {
+    try {
+      // Find the user with related creator and projects
+      const user: any = await UsersModel.findOne({
+        where: {
+          id: userId,
+        },
+        include: [
+          {
+            model: CreatorModel,
+            as: "creator", // Alias defined in the association
+            required: false, // Optional in case the user is not a creator
+            include: [
+              {
+                model: ProjectModel,
+                as: "projects", // Alias for the projects association
+                include: [
+                  {
+                    model: MediaModel,
+                    as: "media", // Alias for the media association
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+  
+      if (!user) {
+        return {
+          message: "User not found or no associated creator",
+          status: false,
+        };
+      }
+  
+      return {
+        message: "Projects and media fetched successfully",
+        status: true,
+        data: user.creator?.projects || [],
+      };
+    } catch (err: any) {
+      return {
+        message: err.message,
+        status: false,
+      };
+    }
+  }
+  
   public async resetPasswordLink(data: any) {
     try {
       // Check if the data exists

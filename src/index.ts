@@ -16,6 +16,7 @@ app.use(bodyParser.json({ limit: "100mb" })); // Set the limit to an appropriate
 // ENABLE CORS
 const allowedOrigins = [
   "http://localhost:3000",
+  "https://astra-v2.vercel.app",
   // Add more origins as needed
 ];
 
