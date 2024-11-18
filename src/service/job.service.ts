@@ -9,6 +9,7 @@ import {
   UsersModel,
 } from "../model";
 import { JobApplicationModel } from "../model/jobApplication.model";
+import { SavedJobsModel } from "../model/savedJob.model";
 
 class jobService {
   public createJob = async (data: any, userId: string) => {
@@ -74,6 +75,72 @@ class jobService {
       };
     }
   };
+  
+public getSavedJob = async(userId:string) =>{
+try{
+//get all saved jobs by userId
+const savedJobs = await SavedJobsModel.findAll({
+  where: { userId },
+  include: [
+    {
+      model: JobModel,
+      include: [
+        {
+          model: DesignModel,
+          include: [
+            {
+              model: MediaModel,
+              as: "media",
+              attributes: ["link"],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+});
+return {
+  message: "Saved jobs fetched successfully",
+  status: true,
+  data: savedJobs,
+  };
+}catch(error:any){
+  return {
+    message: error?.message || "An error occurred while fetching saved jobs",
+    status: false,
+  };
+}
+}
+public saveJob = async(userId:string, jobId:string) => {
+  try{
+    // check if the job is valid
+    const job = await JobModel.findOne({ where: { id:jobId } });
+    if(!job){
+      return {
+        message: "No job found",
+        status: false,
+      };
+    }
+
+//save job
+const saveJob = await SavedJobsModel.create({
+  jobId,
+  userId
+})
+
+return {
+  message: "Job saved successfully",
+  status: true,
+  data: saveJob,
+}
+
+  }catch(error:any){
+    return {
+      message: error?.message || "An error occurred while saving the job",
+      status: false,
+    };
+  }
+}
 
   public getJob = async (userId: string, status?: any) => {
     try {
