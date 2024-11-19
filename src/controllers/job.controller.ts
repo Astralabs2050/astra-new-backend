@@ -32,8 +32,25 @@ class jobController {
   public saveJob = async (req: Request, res: Response) => {
     try {
       const { id } = (req as any)?.user;
-      const { jobId } = req?.body
-      const response = await JobService.saveJob(id, jobId)
+      const { jobId } = req?.body;
+      const response = await JobService.saveJob(id, jobId);
+      return res.json(response);
+    } catch (error: any) {
+      return res.status(400).json({
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      });
+    }
+  };
+
+  public acceptDeclineJob = async (req: Request, res: Response) => {
+    try {
+      const { jobApplicationId, status, negotiation = false } = req?.body;
+      const response = await JobService.acceptDeclineJobApplication(
+        jobApplicationId,
+        status,
+        negotiation,
+      );
       return res.json(response);
     } catch (error: any) {
       return res.status(400).json({
@@ -46,8 +63,8 @@ class jobController {
   public getSaveJob = async (req: Request, res: Response) => {
     try {
       const { id } = (req as any)?.user;
-  
-      const response = await JobService.getSavedJob(id)
+
+      const response = await JobService.getSavedJob(id);
       return res.json(response);
     } catch (error: any) {
       return res.status(400).json({

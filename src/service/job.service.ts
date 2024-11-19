@@ -1,3 +1,4 @@
+import { where } from "sequelize";
 import { sequelize } from "../db";
 import {
   DesignModel,
@@ -75,72 +76,104 @@ class jobService {
       };
     }
   };
-  
-public getSavedJob = async(userId:string) =>{
-try{
-//get all saved jobs by userId
-const savedJobs = await SavedJobsModel.findAll({
-  where: { userId },
-  include: [
-    {
-      model: JobModel,
-      include: [
-        {
-          model: DesignModel,
-          include: [
-            {
-              model: MediaModel,
-              as: "media",
-              attributes: ["link"],
-            },
-          ],
-        },
-      ],
-    },
-  ],
-});
-return {
-  message: "Saved jobs fetched successfully",
-  status: true,
-  data: savedJobs,
-  };
-}catch(error:any){
-  return {
-    message: error?.message || "An error occurred while fetching saved jobs",
-    status: false,
-  };
-}
-}
-public saveJob = async(userId:string, jobId:string) => {
-  try{
-    // check if the job is valid
-    const job = await JobModel.findOne({ where: { id:jobId } });
-    if(!job){
+
+  public getSavedJob = async (userId: string) => {
+    try {
+      //get all saved jobs by userId
+      const savedJobs = await SavedJobsModel.findAll({
+        where: { userId },
+        include: [
+          {
+            model: JobModel,
+            include: [
+              {
+                model: DesignModel,
+                include: [
+                  {
+                    model: MediaModel,
+                    as: "media",
+                    attributes: ["link"],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
       return {
-        message: "No job found",
+        message: "Saved jobs fetched successfully",
+        status: true,
+        data: savedJobs,
+      };
+    } catch (error: any) {
+      return {
+        message:
+          error?.message || "An error occurred while fetching saved jobs",
         status: false,
       };
     }
+  };
+  public acceptDeclineJobApplication = async (
+    jobId: string,
+    status: boolean,
+    negotiation: boolean,
+  ) => {
+    try {
+      //check and update
+      const jobApplication = await JobApplicationModel.update(
+        {
+          status,
+          negotiation,
+        },
+        {
+          where: {
+            id: jobId,
+          },
+        },
+      );
+      return {
+        message: "Job application updated successfully",
+        status: true,
+        data: jobApplication,
+      };
+    } catch (error: any) {
+      return {
+        message:
+          error?.message ||
+          "An error occurred while accepting/declining job application",
+        status: false,
+      };
+    }
+  };
+  public saveJob = async (userId: string, jobId: string) => {
+    try {
+      // check if the job is valid
+      const job = await JobModel.findOne({ where: { id: jobId } });
+      if (!job) {
+        return {
+          message: "No job found",
+          status: false,
+        };
+      }
 
-//save job
-const saveJob = await SavedJobsModel.create({
-  jobId,
-  userId
-})
+      //save job
+      const saveJob = await SavedJobsModel.create({
+        jobId,
+        userId,
+      });
 
-return {
-  message: "Job saved successfully",
-  status: true,
-  data: saveJob,
-}
-
-  }catch(error:any){
-    return {
-      message: error?.message || "An error occurred while saving the job",
-      status: false,
-    };
-  }
-}
+      return {
+        message: "Job saved successfully",
+        status: true,
+        data: saveJob,
+      };
+    } catch (error: any) {
+      return {
+        message: error?.message || "An error occurred while saving the job",
+        status: false,
+      };
+    }
+  };
 
   public getJob = async (userId: string, status?: any) => {
     try {

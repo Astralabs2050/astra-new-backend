@@ -40,11 +40,17 @@ export class JobApplicationModel extends Model {
   @Column(DataType.UUID)
   userId!: string;
 
-  @Default(false)
   @Column(DataType.INTEGER)
   amount!: number;
 
   @Default(false)
+  @Column(DataType.BOOLEAN)
+  status!: boolean;
+
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  negotiation!: boolean;
+
   @Column(DataType.INTEGER)
   minAmount!: number;
 

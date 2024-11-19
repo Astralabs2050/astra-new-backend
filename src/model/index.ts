@@ -24,5 +24,5 @@ export {
   Waitlist,
   JobApplicationModel,
   JobApplicationProjects,
-  SavedJobsModel
+  SavedJobsModel,
 };
