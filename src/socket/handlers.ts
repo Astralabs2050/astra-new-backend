@@ -1,10 +1,90 @@
 import { ChatMessageModel } from '../model';
+import { uploadImageToS3 } from '../aws';
 import { Op } from 'sequelize';
 
 // Track online users and their sockets
 const onlineUsers = new Map();
 // Track typing status
 const typingUsers = new Map();
+
+// New function for handling image uploads
+export const handleImageUpload = (socket: any) => {
+  socket.on("upload_image", async (data: { 
+    image: string, 
+    receiverId: string 
+  }) => {
+    try {
+      // Validate image data
+      if (!data.image?.trim()) {
+        throw new Error("Image data cannot be empty");
+      }
+
+      // Generate temporary ID for optimistic UI
+      const tempId = Date.now().toString();
+
+      // Immediately emit to sender for optimistic UI
+      socket.emit("image_upload_start", {
+        id: tempId,
+        senderId: socket.user.id,
+        receiverId: data.receiverId,
+        status: 'uploading'
+      });
+
+      // Upload image to S3
+      const uploadResult = await uploadImageToS3('image', data.image, socket.user.id);
+
+      // Check if upload was successful
+      if (!uploadResult.success || !uploadResult.url) {
+        throw new Error(uploadResult.message || "Image upload failed");
+      }
+
+      // Create message in database with S3 image URL
+      const newMessage = await ChatMessageModel.create({
+        senderId: socket.user.id,
+        senderName: socket.user.name,
+        receiverId: data.receiverId,
+        content: uploadResult.url, // S3 URL of the image
+        type: 'image',
+        delivered: false,
+        readAt: null
+      });
+
+      // Update sender with actual message ID and confirm upload
+      socket.emit("image_upload_complete", {
+        tempId,
+        actualId: newMessage.id,
+        imageUrl: uploadResult.url,
+        status: 'uploaded'
+      });
+
+      // Send to receiver if they're online
+      const receiverSocket = onlineUsers.get(data.receiverId);
+      if (receiverSocket) {
+        receiverSocket.emit("new_message", {
+          id: newMessage.id,
+          content: uploadResult.url,
+          type: 'image',
+          senderId: socket.user.id,
+          senderName: socket.user.name,
+          receiverId: data.receiverId,
+          createdAt: newMessage.createdAt
+        });
+
+        // Mark as delivered
+        newMessage.delivered = true;
+        await newMessage.save();
+      }
+
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      
+      // Notify sender of upload failure
+      socket.emit("image_upload_error", {
+        message: error instanceof Error ? error.message : "Failed to upload image"
+      });
+    }
+  });
+};
 
 export const test = (socket: any) => {
     // Add user to online users when they connect
@@ -15,6 +95,9 @@ export const test = (socket: any) => {
         userId: socket.user.id,
         status: 'online'
     });
+
+    // Add image upload functionality
+    handleImageUpload(socket);
 
     // Initialize private chat with another user
     socket.on("start_chat", async (receiverId: string) => {
@@ -65,6 +148,7 @@ export const test = (socket: any) => {
                 senderName: socket.user.name,
                 receiverId: data.receiverId,
                 content: data.content,
+                type: 'text',
                 delivered: false,
                 readAt: null
             });
@@ -81,6 +165,7 @@ export const test = (socket: any) => {
                 receiverSocket.emit("new_message", {
                     id: newMessage.id,
                     content: data.content,
+                    type: 'text',
                     senderId: socket.user.id,
                     senderName: socket.user.name,
                     receiverId: data.receiverId,
