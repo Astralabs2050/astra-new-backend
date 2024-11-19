@@ -13,6 +13,14 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { DesignModel } from "./design.model";
 import { UsersModel } from "./user.model";
+import { BrandModel } from "./brand.model";
+
+
+
+enum timelineStatus {
+  completed = "completed",
+  ongoing = "ongoing",
+}
 
 @Table({ timestamps: true, tableName: "jobs" })
 export class JobModel extends Model {
@@ -32,9 +40,25 @@ export class JobModel extends Model {
   @Column(DataType.BOOLEAN)
   status!: boolean;
 
+  @AllowNull(true)
+  @Column(DataType.ENUM(...Object.values(timelineStatus)))
+  timelineStatus?: timelineStatus;
+
   @AllowNull(false)
   @Column(DataType.BOOLEAN)
   manufacturer!: boolean;
+
+  @AllowNull(true)
+  @ForeignKey(() => BrandModel)
+  @Column(DataType.UUID)
+  brandId?: string;
+
+  @BelongsTo(() => BrandModel, {
+    foreignKey: "brandId",
+    as: "brand",
+    onDelete: "CASCADE",
+  })
+  brand?: BrandModel;
 
   @AllowNull(true)
   @ForeignKey(() => UsersModel)
