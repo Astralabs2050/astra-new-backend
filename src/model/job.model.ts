@@ -15,8 +15,6 @@ import { DesignModel } from "./design.model";
 import { UsersModel } from "./user.model";
 import { BrandModel } from "./brand.model";
 
-
-
 enum timelineStatus {
   completed = "completed",
   ongoing = "ongoing",
