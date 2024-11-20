@@ -116,8 +116,8 @@ class jobController {
   public getJobApplicants = async (req: Request, res: Response) => {
     try {
       const { id } = (req as any)?.user;
-      const { jobId } = req.params;
-
+      const jobId:any = req.query?.jobId;
+     console.log("jobId",jobId)
       const response = await JobService.getJobApplicants(jobId);
       return res.json(response);
     } catch (error: any) {
