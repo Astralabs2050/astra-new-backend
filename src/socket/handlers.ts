@@ -1,5 +1,5 @@
-import { ChatMessageModel } from '../model';
-import { uploadImageToS3 } from '../aws';
+import { MessageModel } from '../model';
+import { uploadImageToS3 } from '/Users/chukwumaihenzerue/Desktop/astra-new-backend/util/aws';
 import { Op } from 'sequelize';
 
 // Track online users and their sockets
@@ -39,7 +39,7 @@ export const handleImageUpload = (socket: any) => {
       }
 
       // Create message in database with S3 image URL
-      const newMessage = await ChatMessageModel.create({
+      const newMessage = await MessageModel.create({
         senderId: socket.user.id,
         senderName: socket.user.name,
         receiverId: data.receiverId,
@@ -103,7 +103,7 @@ export const test = (socket: any) => {
     socket.on("start_chat", async (receiverId: string) => {
         try {
             // Get chat history between these two users
-            const messages = await ChatMessageModel.findAll({
+            const messages = await MessageModel.findAll({
                 where: {
                     [Op.or]: [
                         { senderId: socket.user.id, receiverId: receiverId },
@@ -143,7 +143,7 @@ export const test = (socket: any) => {
             });
 
             // Create message in database
-            const newMessage = await ChatMessageModel.create({
+            const newMessage = await MessageModel.create({
                 senderId: socket.user.id,
                 senderName: socket.user.name,
                 receiverId: data.receiverId,
@@ -186,7 +186,7 @@ export const test = (socket: any) => {
     // Mark message as read
     socket.on("mark_as_read", async (messageId: string) => {
         try {
-            const message = await ChatMessageModel.findByPk(messageId);
+            const message = await MessageModel.findByPk(messageId);
             if (message && message.receiverId === socket.user.id) {
                 message.readAt = new Date();
                 await message.save();
