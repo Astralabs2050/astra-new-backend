@@ -2,6 +2,7 @@ import { where } from "sequelize";
 import { sequelize } from "../db";
 import {
   BrandModel,
+  CreatorModel,
   DesignModel,
   JobApplicationProjects,
   JobModel,
@@ -434,14 +435,35 @@ class jobService {
             {
               model: UsersModel,
               as: "user",
+              include: [
+                {
+                  model: CreatorModel,
+                  as: "creator", // Alias defined in UsersModel
+                },
+                {
+                  model: BrandModel,
+                  as: "brand", // Alias defined in UsersModel
+                },
+              ],
             },
           ],
         });
-
+        const sanitizedData = jobApplications.map((application) => {
+          const { user, ...applicationDetails } = application.toJSON(); // Convert Sequelize object to JSON
+          if (user) {
+            // Remove sensitive fields
+            delete user.password;
+            delete user.isOtpVerified;
+            delete user.otpCreatedAt;
+            delete user.isOtpExp;
+          }
+          return { ...applicationDetails, user };
+        });
+        
       return {
         status: true,
         message: "Got all job applicants",
-        data: jobApplications,
+        data: sanitizedData,
       };
     } catch (error) {
       console.error("Error getting job applications:", error);
