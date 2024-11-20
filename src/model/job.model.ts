@@ -46,17 +46,12 @@ export class JobModel extends Model {
   @Column(DataType.BOOLEAN)
   manufacturer!: boolean;
 
-  @AllowNull(true)
-  @ForeignKey(() => BrandModel)
-  @Column(DataType.UUID)
-  brandId?: string;
 
-  @BelongsTo(() => BrandModel, {
-    foreignKey: "brandId",
-    as: "brand",
-    onDelete: "CASCADE",
-  })
-  brand?: BrandModel;
+
+  @AllowNull(true)
+  @ForeignKey(() => UsersModel)
+  @Column(DataType.UUID)
+  makerId?: string;
 
   @AllowNull(true)
   @ForeignKey(() => UsersModel)

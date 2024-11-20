@@ -1,6 +1,7 @@
 import { where } from "sequelize";
 import { sequelize } from "../db";
 import {
+  BrandModel,
   DesignModel,
   JobApplicationProjects,
   JobModel,
@@ -116,27 +117,58 @@ class jobService {
   public acceptDeclineJobApplication = async (
     jobId: string,
     status: boolean,
-    negotiation: boolean,
+    negotiation: boolean
   ) => {
+    const transaction = await sequelize.transaction();
+  
     try {
-      //check and update
-      const jobApplication = await JobApplicationModel.update(
-        {
-          status,
-          negotiation,
-        },
-        {
-          where: {
-            id: jobId,
-          },
-        },
+      // Fetch the job application
+      const jobApplicationFound = await JobApplicationModel.findByPk(jobId);
+      if (!jobApplicationFound) {
+        return { message: "Job application not found", status: false };
+      }
+  
+      // Update the job application status
+      const [updatedRows] = await JobApplicationModel.update(
+        { status, negotiation },
+        { where: { id: jobId }, transaction }
       );
+  
+      // Ensure the update was successful
+      if (!updatedRows) {
+        throw new Error("Failed to update job application");
+      }
+  
+      // If the application is accepted, update the job details
+      if (status) {
+        // Verify the userId exists in the UsersModel
+        const userExists = await UsersModel.findByPk(jobApplicationFound.userId);
+        if (!userExists) {
+          throw new Error(
+            "The associated user for the brandId does not exist. Update failed."
+          );
+        }
+  
+        await JobModel.update(
+          {
+            timelineStatus: "ongoing",
+            makerId : jobApplicationFound.userId, // Ensure this is a valid user ID
+          },
+          { where: { id: jobApplicationFound.jobId }, transaction }
+        );
+      }
+  
+      // Commit the transaction
+      await transaction.commit();
+  
       return {
         message: "Job application updated successfully",
         status: true,
-        data: jobApplication,
       };
     } catch (error: any) {
+      // Roll back the transaction on error
+      await transaction.rollback();
+  
       return {
         message:
           error?.message ||
@@ -145,6 +177,7 @@ class jobService {
       };
     }
   };
+  
   public saveJob = async (userId: string, jobId: string) => {
     try {
       // check if the job is valid
