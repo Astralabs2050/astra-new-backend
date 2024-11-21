@@ -38,4 +38,11 @@ export class SavedJobsModel extends Model {
   @ForeignKey(() => UsersModel)
   @Column(DataType.UUID)
   userId!: string;
+
+  @BelongsTo(() => UsersModel, {
+    foreignKey: "userId",
+    as: "user",
+    onDelete: "CASCADE",
+  })
+  user?: UsersModel;
 }
