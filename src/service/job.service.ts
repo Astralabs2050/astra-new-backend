@@ -108,7 +108,7 @@ class jobService {
       return {
         message: "Saved jobs fetched successfully",
         status: true,
-        data: getSavedJob,
+        data: savedJobs,
       };
     } catch (error: any) {
       return {
