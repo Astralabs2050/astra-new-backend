@@ -212,6 +212,10 @@ class jobService {
             ],
           },
           {
+            model: JobApplicationModel,
+            as: "job",
+          },
+          {
             model: UsersModel,
             as: "user",
             include: [

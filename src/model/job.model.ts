@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 import { DesignModel } from "./design.model";
 import { UsersModel } from "./user.model";
 import { BrandModel } from "./brand.model";
+import { JobApplicationModel } from "./jobApplication.model";
 
 export enum timelineStatus {
   completed = "completed",
@@ -76,4 +77,11 @@ export class JobModel extends Model {
     onDelete: "CASCADE",
   })
   design!: DesignModel;
+
+  // Add the HasMany association for MediaModel
+  @HasMany(() => JobApplicationModel, {
+    foreignKey: "jobId", // Reference to the user's id in the MediaModel
+    as: "job", // Alias for the media association
+  })
+  job?: JobApplicationModel[];
 }
