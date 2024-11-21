@@ -16,8 +16,6 @@ app.use(bodyParser.json({ limit: "100mb" })); // Set the limit to an appropriate
 // ENABLE CORS
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://astra-v2.vercel.app",
-  "http://51.20.37.218:3002",
   // Add more origins as needed
 ];
 
@@ -56,7 +54,7 @@ async function startServer() {
 
   // Routes
   app.use(routes);
-  const PORT =  3002;
+  const PORT = Number(process.env.PORT) || 3000;
   httpServer.listen(PORT, "0.0.0.0", () => {
     // Ensure that PORT is a number
     console.log(`Server is running on port ${PORT}`);
