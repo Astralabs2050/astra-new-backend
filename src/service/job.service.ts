@@ -88,12 +88,12 @@ class jobService {
           {
             model: JobModel,
             as: "job",
-            include:[
+            include: [
               {
                 model: DesignModel,
                 as: "design",
-              }
-            ]
+              },
+            ],
           },
           {
             model: UsersModel,
@@ -101,10 +101,24 @@ class jobService {
           },
         ],
       });
+      
+      // Remove sensitive fields from the user object
+      const sanitizedSavedJobs = savedJobs.map((job:any) => {
+        if (job?.user) {
+          delete job?.user?.password;
+          delete job?.user?.isOtpVerified;
+          delete job?.user?.otpCreatedAt;
+          delete job?.user?.isOtpExp;
+        }
+        return job;
+      });
+      
+      // The `sanitizedSavedJobs` array now has the sensitive fields removed.
+      
       return {
         message: "Saved jobs fetched successfully",
         status: true,
-        data: savedJobs,
+        data: sanitizedSavedJobs,
       };
     } catch (error: any) {
       return {
