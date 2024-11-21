@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import JobService from "../service/job.service";
+import { timelineStatus } from "../model/job.model";
 
 class jobController {
   public createJob = async (req: Request, res: Response) => {
@@ -115,7 +116,10 @@ class jobController {
 
   public getOngoingJobs = async (req: Request, res: Response) => {
     try {
-      const response = await JobService.getAllJobs();
+      const { id } = (req as any)?.user;
+      const status = req?.query?.status
+      console.log("status",status,req?.query)
+      const response = await JobService.getOngoingJobApplication(id,status as timelineStatus)
       return res.json(response);
     } catch (error: any) {
       return res.status(400).json({
@@ -127,7 +131,7 @@ class jobController {
 
   public getJobApplicants = async (req: Request, res: Response) => {
     try {
-      const { id } = (req as any)?.user;
+     
       const jobId:any = req.query?.jobId;
      console.log("jobId",jobId)
       const response = await JobService.getJobApplicants(jobId);

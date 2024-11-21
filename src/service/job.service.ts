@@ -13,6 +13,7 @@ import {
 } from "../model";
 import { JobApplicationModel } from "../model/jobApplication.model";
 import { SavedJobsModel } from "../model/savedJob.model";
+import { timelineStatus } from "../model/job.model";
 
 class jobService {
   public createJob = async (data: any, userId: string) => {
@@ -182,6 +183,56 @@ class jobService {
     }
   };
   
+  public getOngoingJobApplication = async(id:string,filter: timelineStatus) =>{
+    try{
+      const getJob = await JobModel.findAll({
+        where:{
+          makerId:id,
+          timelineStatus:filter
+        },
+        include: [
+          {
+            model: DesignModel,
+            as: "design",
+            include: [
+              {
+                model: MediaModel,
+                as: "media",
+              },
+              {
+                model: PieceModel,
+                as: "pieces",
+                include: [
+                  {
+                    model: MediaModel,
+                    as: "media",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            model: UsersModel,
+            as: "user",
+            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
+          }
+        ]
+      })
+       return {
+        message: "Ongoing job applications fetched successfully",
+        status: true,
+        data: getJob
+       }  
+    }catch(error:any){
+      return {
+        message:
+          error?.message ||
+          "An error occurred while fetching ongoing job applications",
+        status: false,
+      }
+    }
+  }
+
   public saveJob = async (userId: string, jobId: string) => {
     try {
       // check if the job is valid
