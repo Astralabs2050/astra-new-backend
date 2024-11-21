@@ -98,27 +98,17 @@ class jobService {
           {
             model: UsersModel,
             as: "user",
+            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
           },
         ],
       });
       
       // Remove sensitive fields from the user object
-      const sanitizedSavedJobs = savedJobs.map((job: any) => {
-        if (job?.user) {
-          delete job.user.password;
-          delete job.user.isOtpVerified;
-          delete job.user.otpCreatedAt;
-          delete job.user.isOtpExp;
-        }
-        return job;
-      });
-      
-      // The `sanitizedSavedJobs` array now has the sensitive fields removed.
-      
+     
       return {
         message: "Saved jobs fetched successfully",
         status: true,
-        data: sanitizedSavedJobs,
+        data: getSavedJob,
       };
     } catch (error: any) {
       return {
