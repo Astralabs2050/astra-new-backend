@@ -119,7 +119,7 @@ class jobController {
       const id = req?.query?.id
       const status = req?.query?.status
       console.log("status",status,req?.query)
-      const response = await JobService.getOngoingJobApplication(id,status as timelineStatus)
+      const response = await JobService.getOngoingJobApplication(id as string,status as timelineStatus)
       return res.json(response);
     } catch (error: any) {
       return res.status(400).json({
