@@ -270,6 +270,16 @@ class jobService {
           {
             model: UsersModel,
             as: "user",
+            include: [
+              {
+                model: CreatorModel,
+                as: "creator", // Alias defined in UsersModel
+              },
+              {
+                model: BrandModel,
+                as: "brand", // Alias defined in UsersModel
+              },
+            ],
           },
         ],
       });
