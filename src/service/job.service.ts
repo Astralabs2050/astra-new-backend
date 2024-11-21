@@ -86,19 +86,12 @@ class jobService {
         where: { userId },
         include: [
           {
-            model: JobModel,
-            include: [
-              {
-                model: DesignModel,
-                include: [
-                  {
-                    model: MediaModel,
-                    as: "media",
-                    attributes: ["link"],
-                  },
-                ],
-              },
-            ],
+            model: DesignModel,
+            as: "design",
+          },
+          {
+            model: UsersModel,
+            as: "user",
           },
         ],
       });
