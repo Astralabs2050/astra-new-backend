@@ -51,6 +51,10 @@ export class JobApplicationModel extends Model {
   @Column(DataType.BOOLEAN)
   negotiation!: boolean;
 
+  @AllowNull(false) // Ensures description cannot be null
+  @Column(DataType.TEXT)
+  wallet!: string;
+  
   @Column(DataType.INTEGER)
   minAmount!: number;
 

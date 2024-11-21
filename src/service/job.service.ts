@@ -214,6 +214,16 @@ class jobService {
           {
             model: UsersModel,
             as: "user",
+            include: [
+              {
+                model: CreatorModel,
+                as: "creator", // Alias defined in UsersModel
+              },
+              {
+                model: BrandModel,
+                as: "brand", // Alias defined in UsersModel
+              },
+            ],
             attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
           }
         ]
@@ -439,7 +449,7 @@ class jobService {
           userId,
           jobId: data?.jobId,
           amount: data?.amount,
-          minAmount: data?.minAmount,
+          wallet: data?.wallet,
         },
         { transaction },
       );
