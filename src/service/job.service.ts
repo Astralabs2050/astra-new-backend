@@ -103,12 +103,12 @@ class jobService {
       });
       
       // Remove sensitive fields from the user object
-      const sanitizedSavedJobs = savedJobs.map((job:any) => {
+      const sanitizedSavedJobs = savedJobs.map((job: any) => {
         if (job?.user) {
-          delete job?.user?.password;
-          delete job?.user?.isOtpVerified;
-          delete job?.user?.otpCreatedAt;
-          delete job?.user?.isOtpExp;
+          delete job.user.password;
+          delete job.user.isOtpVerified;
+          delete job.user.otpCreatedAt;
+          delete job.user.isOtpExp;
         }
         return job;
       });
