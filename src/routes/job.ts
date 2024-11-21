@@ -29,4 +29,5 @@ jobRouter.get(
   JobController.getOneJobApplicants
 );
 
+jobRouter.get("/ongoing-job-application", isAuthenticated, JobController.getOngoingJobs)
 export default jobRouter;

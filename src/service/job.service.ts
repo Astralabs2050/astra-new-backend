@@ -86,8 +86,14 @@ class jobService {
         where: { userId },
         include: [
           {
-            model: DesignModel,
-            as: "design",
+            model: JobModel,
+            as: "jobId",
+            include:[
+              {
+                model: DesignModel,
+                as: "design",
+              }
+            ]
           },
           {
             model: UsersModel,

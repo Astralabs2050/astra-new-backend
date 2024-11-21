@@ -113,6 +113,18 @@ class jobController {
     }
   };
 
+  public getOngoingJobs = async (req: Request, res: Response) => {
+    try {
+      const response = await JobService.getAllJobs();
+      return res.json(response);
+    } catch (error: any) {
+      return res.status(400).json({
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      });
+    }
+  };
+
   public getJobApplicants = async (req: Request, res: Response) => {
     try {
       const { id } = (req as any)?.user;
