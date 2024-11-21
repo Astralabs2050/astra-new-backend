@@ -116,7 +116,7 @@ class jobController {
 
   public getOngoingJobs = async (req: Request, res: Response) => {
     try {
-      const id = req?.params?.id
+      const id = req?.query?.id
       const status = req?.query?.status
       console.log("status",status,req?.query)
       const response = await JobService.getOngoingJobApplication(id,status as timelineStatus)
