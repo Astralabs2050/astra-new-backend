@@ -87,7 +87,7 @@ class jobService {
         include: [
           {
             model: JobModel,
-            as: "jobId",
+            as: "job",
             include:[
               {
                 model: DesignModel,
