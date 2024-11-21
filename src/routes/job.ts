@@ -23,4 +23,10 @@ jobRouter.get(
   JobController.getJobApplicants,
 );
 
+jobRouter.get(
+  "/job-application/:id",
+  isAuthenticated,
+  JobController.getOneJobApplicants
+);
+
 export default jobRouter;

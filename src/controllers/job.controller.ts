@@ -127,6 +127,21 @@ class jobController {
       });
     }
   };
+
+  public getOneJobApplicants = async (req: Request, res: Response) => {
+    try {
+      const { id } = (req as any)?.user;
+      const jobId:any = req.query?.jobId;
+      const userId:any = req.query?.userId
+      const response = await JobService.getOneJobApplicants(jobId, userId);
+      return res.json(response);
+    } catch (error: any) {
+      return res.status(400).json({
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      });
+    }
+  };
 }
 const JobController = new jobController();
 export default JobController;

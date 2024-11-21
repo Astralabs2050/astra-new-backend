@@ -470,6 +470,69 @@ class jobService {
       throw error;
     }
   };
+
+  public getOneJobApplicants = async (jobId: string, userId: string) => {
+    try {
+      // Check if the job exists
+      const job = await JobModel.findOne({
+        where: { id: jobId },
+      });
+
+      if (!job) {
+        return {
+          message: "No job found",
+          status: false,
+        };
+      }
+
+      // Get applications for the job with pagination
+      console.log("userIduserId",userId)
+      const jobApplications:any =
+        await JobApplicationModel.findOne({
+          where: {
+             jobId: job?.dataValues?.id,
+             userId },
+          include: [
+            {
+              model: UsersModel,
+              as: "user",
+              include: [
+                {
+                  model: CreatorModel,
+                  as: "creator", // Alias defined in UsersModel
+                },
+                {
+                  model: BrandModel,
+                  as: "brand", // Alias defined in UsersModel
+                },
+              ],
+            },
+          ],
+        });
+        console.log("jobApplicationsuser",jobApplications?.user)
+        if (jobApplications?.user) {
+          jobApplications.user.password = null;
+          jobApplications.user.isOtpVerified = null;
+          jobApplications.user.otpCreatedAt = null;
+          jobApplications.user.isOtpExp = null;
+          delete jobApplications?.user?.password;
+          delete jobApplications?.user?.isOtpVerified;
+          delete jobApplications?.user?.otpCreatedAt;
+          delete jobApplications?.user?.isOtpExp;
+      }
+      
+        
+        
+      return {
+        status: true,
+        message: "Got job applicant",
+        data: jobApplications,
+      };
+    } catch (error) {
+      console.error("Error getting job application:", error);
+      throw error;
+    }
+  };
 }
 
 const JobService = new jobService();
