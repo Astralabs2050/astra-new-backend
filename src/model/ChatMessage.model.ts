@@ -42,9 +42,10 @@ import {
     @Column(DataType.DATE)
     readAt?: Date; // Added to track when message is read
   
+    @Default(false) // Ensures default value is applied
     @Column(DataType.BOOLEAN)
-    @Default(false)
-    delivered!: boolean; // Added to track message delivery status
+    delivered!: boolean;
+
   
     @Column(DataType.STRING)
     senderName?: string; // Added to include sender's name

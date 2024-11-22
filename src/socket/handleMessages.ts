@@ -62,6 +62,7 @@ export async function getPreviousMessages(
 
 export async function handlePrivateMessage(socket: any, io: any) {
   socket.on("privateMessage", async (data: any) => {
+    console.log("Private message",data)
     try {
       const message = await saveAndBroadcastMessage(data);
       io.to(data.receiverId).emit("privateMessage", message);

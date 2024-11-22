@@ -3,6 +3,7 @@ import { Handshake } from './../../node_modules/socket.io/dist/socket-types.d';
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import { test } from './handlers';
+import { handlePrivateMessage } from './handleMessages';
 
 const JWT_SECRET: string = process.env.JWT_SECRET as string;
 
@@ -42,11 +43,13 @@ const handleSocketConnection = (io: {
   });
 
   io.on("connection", async (socket) => {
-    console.log(`${socket.id} connected`);
+    console.log(`${socket.id} connected now`);
 
     // Emit connection status
     socket.emit("connection_status", true);
     
+    //handle private messages
+    handlePrivateMessage(socket,io);
    
     // Handle disconnect
     socket.on("disconnect", async () => {

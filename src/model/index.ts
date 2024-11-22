@@ -11,6 +11,8 @@ import { Waitlist } from "./waitlist.model";
 import { JobApplicationModel } from "./jobApplication.model";
 import { JobApplicationProjects } from "./JobApplicationProjects.model";
 import { SavedJobsModel } from "./savedJob.model";
+import { MessageModel } from "./ChatMessage.model";
+
 export {
   UsersModel,
   MediaModel,
@@ -25,4 +27,5 @@ export {
   JobApplicationModel,
   JobApplicationProjects,
   SavedJobsModel,
+  MessageModel
 };
