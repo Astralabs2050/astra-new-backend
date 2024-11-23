@@ -20,18 +20,14 @@ class DesignClass {
       const url = "https://api.openai.com/v1/images/generations";
 
       // Prepare the request payload
-      const promptTemplates = [
-        "An ultra-detailed, photorealistic depiction of {prompt}, presented on a plain background without any models. The design features high-quality materials and intricate details.",
-        "A stunning, high-definition image of {prompt}, isolated on a simple backdrop with no models. Showcasing exceptional craftsmanship and elegant design.",
-        "A realistic, detailed render of {prompt}, displayed alone on a plain background. Emphasizing beautiful aesthetics and meticulous attention to detail.",
-        "A professional, high-quality photograph of {prompt}, set against a plain background with no models. The outfit exhibits exquisite design and fine craftsmanship."
-      ];
-      
       const requestData: any = {
-        prompts: promptTemplates.map(template => template.replace("{prompt}", data.prompt)), // Insert the user's input dynamically
+        prompt: `An ultra-detailed, photorealistic depiction of ${data.prompt}, presented on a plain background without any models. The design features high-quality materials and intricate details.",
+  "A stunning, high-definition image of ${data.prompt}, isolated on a simple backdrop with no models. Showcasing exceptional craftsmanship and elegant design.",
+  "A realistic, detailed render of ${data.prompt}, displayed alone on a plain background. Emphasizing beautiful aesthetics and meticulous attention to detail.",
+  "A professional, high-quality photograph of ${data.prompt}, set against a plain background with no models. The outfit exhibits exquisite design and fine craftsmanship.`,
         n: 4, // Number of image iterations to generate
         size: "512x512", // Resolution of the images
-        quality: "hd" // High-definition quality
+        quality:"hd"
       };
 
       // Check if there is an image (URL or base64) provided
