@@ -24,6 +24,7 @@ class DesignClass {
         prompt: data.prompt + "from the above text description extract various cloth attributes. Examples of attributes to look out for are: fit, gender, size, category, material, pattern, occasion, color, and style. use this attributes in conjunction with the description generate a beautiful illustration of clothing item, with meticulous attention to detail. The background of the images should be plain white. The focus should be on presenting the clothing illustration on a white background he focus should be on presenting the clothing illustration on a white background. Artwork by rockstar games, artwork of gta 5, cel shading, cel art.",
         n: 4, // Number of image iterations to generate
         size: "512x512", // Resolution of the images
+        quality:"hd", // Quality
       };
 
       // Check if there is an image (URL or base64) provided
