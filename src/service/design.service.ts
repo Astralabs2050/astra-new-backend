@@ -23,7 +23,7 @@ class DesignClass {
       const requestData: any = {
         prompt: data.prompt,
         n: 4, // Number of image iterations to generate
-        size: "1024x1024", // Resolution of the images
+        size: "512x512", // Resolution of the images
       };
 
       // Check if there is an image (URL or base64) provided
