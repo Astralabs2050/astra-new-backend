@@ -20,11 +20,18 @@ class DesignClass {
       const url = "https://api.openai.com/v1/images/generations";
 
       // Prepare the request payload
+      const promptTemplates = [
+        "An ultra-detailed, photorealistic depiction of {prompt}, presented on a plain background without any models. The design features high-quality materials and intricate details.",
+        "A stunning, high-definition image of {prompt}, isolated on a simple backdrop with no models. Showcasing exceptional craftsmanship and elegant design.",
+        "A realistic, detailed render of {prompt}, displayed alone on a plain background. Emphasizing beautiful aesthetics and meticulous attention to detail.",
+        "A professional, high-quality photograph of {prompt}, set against a plain background with no models. The outfit exhibits exquisite design and fine craftsmanship."
+      ];
+      
       const requestData: any = {
-        prompt: data.prompt + "from the above text description extract various cloth attributes. Examples of attributes to look out for are: fit, gender, size, category, material, pattern, occasion, color, and style. use this attributes in conjunction with the description generate a beautiful illustration of clothing item, with meticulous attention to detail. The background of the images should be plain white. The focus should be on presenting the clothing illustration on a white background . Artwork by rockstar games, artwork of gta 5, cel shading, cel art.",
+        prompts: promptTemplates.map(template => template.replace("{prompt}", data.prompt)), // Insert the user's input dynamically
         n: 4, // Number of image iterations to generate
         size: "512x512", // Resolution of the images
-        quality:"hd"
+        quality: "hd" // High-definition quality
       };
 
       // Check if there is an image (URL or base64) provided
