@@ -54,6 +54,14 @@ export class JobModel extends Model {
   @Column(DataType.UUID)
   makerId?: string;
 
+  @BelongsTo(() => UsersModel, {
+    foreignKey: "makerId",
+    as: "maker", // Define the alias for this association
+    onDelete: "SET NULL", // Optional, based on your requirements
+  })
+  maker?: UsersModel;
+  
+
   @AllowNull(true)
   @ForeignKey(() => UsersModel)
   @Column(DataType.UUID)

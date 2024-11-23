@@ -302,6 +302,7 @@ class jobService {
           {
             model: UsersModel,
             as: "user",
+            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
           },
         ],
       });
@@ -355,6 +356,7 @@ class jobService {
                 as: "brand", // Alias defined in UsersModel
               },
             ],
+            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
           },
         ],
       });
@@ -391,6 +393,7 @@ class jobService {
           {
             model: UsersModel,
             as: "user",
+            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
           },
         ],
       });

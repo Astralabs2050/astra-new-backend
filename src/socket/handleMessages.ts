@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { UsersModel } from "../model";
+import { JobModel, MediaModel, UsersModel } from "../model";
 import { MessageModel } from "../model/ChatMessage.model";
 
 export function sendMessage(io: any) {}
@@ -15,9 +15,40 @@ const getMessages = async (senderId: string, receiverId: string) => {
         { senderId: receiverId, receiverId: senderId }
       ]
     },
-    order: [['createdAt', 'ASC']]
+    order: [['createdAt', 'ASC']],
+    include: [
+      {
+        model: UsersModel,
+        as: 'sender',
+        attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
+        include: [
+          {
+            model: MediaModel,
+            as: 'media', 
+            required: false, // Allow messages without associated media
+           
+          }
+        ]
+      },
+      {
+        model: UsersModel,
+        as: 'receiver',
+        attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
+        include: [
+          {
+            model: MediaModel,
+            as: 'media',
+            required: false,
+            
+          }
+        ]
+      }
+    ]
   });
+  console.log("getMessages",getMessages)
 };
+
+
 
 const saveAndBroadcastMessage = async (data: any) => {
   try {
@@ -47,12 +78,11 @@ const saveAndBroadcastMessage = async (data: any) => {
 
 export async function getPreviousMessages(
   socket: any,
-  senderId: string,
-  receiverId: string
 ) {
   socket.on("get_previous_messages", async (data: any) => {
     try {
       const messages = await getMessages(data.senderId, data.receiverId);
+      console.log("messages",messages)
       socket.emit("previous_messages", messages);
     } catch (error) {
       console.error("Error retrieving previous messages:", error);
@@ -121,3 +151,4 @@ export function typing(io: any) {
     });
   });
 }
+

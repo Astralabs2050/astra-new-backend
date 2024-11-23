@@ -3,7 +3,8 @@ import { Handshake } from './../../node_modules/socket.io/dist/socket-types.d';
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import { test } from './handlers';
-import { handlePrivateMessage } from './handleMessages';
+import {  getPreviousMessages, handlePrivateMessage } from './handleMessages';
+import { BrandModel, CreatorModel, DesignModel, JobModel, MediaModel, UsersModel } from '../model';
 
 const JWT_SECRET: string = process.env.JWT_SECRET as string;
 
@@ -20,7 +21,7 @@ const handleSocketConnection = (io: {
       }
 
       const decoded: any = jwt.verify(token, JWT_SECRET);
-      console.log("decoded", decoded);
+    
       const currentTimestamp = Math.floor(Date.now() / 1000);
       if (decoded?.exp && decoded?.exp < currentTimestamp) {
         throw new Error("Unauthorized: Token Expired");
@@ -47,9 +48,161 @@ const handleSocketConnection = (io: {
 
     // Emit connection status
     socket.emit("connection_status", true);
+
+    //get the brands
+    socket.on("get_brands", async (data: any) => {
+      try {
+        console.log("Received data:", data); // Log incoming data
+        if (!socket?.id) {
+          return socket.emit("error", { message: "User ID is required" });
+        }
+    
+        console.log("Fetching jobs for user:", socket?.id);
+        const jobs = await JobModel.findAll({
+          where: {
+            userId: socket?.id, // Filters jobs based on the userId linked to the socket ID
+          },
+          include: [
+            {
+              model: UsersModel, // The related model
+              as: "maker", // The alias defined in the JobModel
+              required: false, // Include jobs even if no maker is associated
+              include: [
+                {
+                  model: CreatorModel,
+                  as: "creator", // Alias defined in UsersModel
+                },
+                {
+                  model: BrandModel,
+                  as: "brand", // Alias defined in UsersModel
+                },
+                {
+                  model: MediaModel,
+                  as: "media",
+                  where: {
+                    mediaType: "PROFILE_PICTURE", // Filter by mediaType = "PROFILE_PICTURE"
+                  },
+                  required: false, // Make it optional in case the user doesn't have a profile picture
+                },
+              ],
+              attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp", "otp"] }, // Exclude sensitive fields
+            },
+            {
+              model: UsersModel, // The related model
+              as: "user", // The alias defined in the JobModel
+              required: false, // Include jobs even if no maker is associated
+              include: [
+                {
+                  model: CreatorModel,
+                  as: "creator", // Alias defined in UsersModel
+                },
+                {
+                  model: BrandModel,
+                  as: "brand", // Alias defined in UsersModel
+                },
+                {
+                  model: MediaModel,
+                  as: "media",
+                  where: {
+                    mediaType: "PROFILE_PICTURE", // Filter by mediaType = "PROFILE_PICTURE"
+                  },
+                  required: false, // Make it optional in case the user doesn't have a profile picture
+                },
+              ],
+              attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp", "otp"] }, // Exclude sensitive fields
+            },
+            {
+              model: DesignModel, // The related model
+              as: "design", // The alias defined in the JobModel
+              required: false, 
+
+            }
+          ],
+          
+        });
+        
+    //find jobs where the user is the maker
+console.log("socket?.id111",socket?.id)
+    const makersJob = await JobModel.findAll(
+      {
+        where:{
+          makerId: socket?.id,
+        },
+        include: [
+          {
+            model: UsersModel, // The related model
+            as: "maker", // The alias defined in the JobModel
+            required: false, // Include jobs even if no maker is associated
+            include: [
+              {
+                model: CreatorModel,
+                as: "creator", // Alias defined in UsersModel
+              },
+              {
+                model: BrandModel,
+                as: "brand", // Alias defined in UsersModel
+              },
+              {
+                model: MediaModel,
+                as: "media",
+                where: {
+                  mediaType: "PROFILE_PICTURE", // Filter by mediaType = "PROFILE_PICTURE"
+                },
+                required: false, // Make it optional in case the user doesn't have a profile picture
+              },
+            ],
+            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp", "otp"] }, // Exclude sensitive fields
+          },
+          {
+            model: UsersModel, // The related model
+            as: "user", // The alias defined in the JobModel
+            required: false, // Include jobs even if no maker is associated
+            include: [
+              {
+                model: CreatorModel,
+                as: "creator", // Alias defined in UsersModel
+              },
+              {
+                model: BrandModel,
+                as: "brand", // Alias defined in UsersModel
+              },
+              {
+                model: MediaModel,
+                as: "media",
+                where: {
+                  mediaType: "PROFILE_PICTURE", // Filter by mediaType = "PROFILE_PICTURE"
+                },
+                required: false, // Make it optional in case the user doesn't have a profile picture
+              },
+            ],
+            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp", "otp"] }, // Exclude sensitive fields
+          },
+          {
+            model: DesignModel, // The related model
+            as: "design", // The alias defined in the JobModel
+            required: false, 
+
+          }
+        ],
+      }
+    )
+    console.log("makersJob",makersJob)
+
+        console.log("Fetched jobs:", [...jobs,...makersJob]);
+        socket.emit("brands", [...jobs,...makersJob]); // Send jobs back to the client
+      } catch (error) {
+        console.error("Error in get_brands:", error);
+        socket.emit("error", { message: "An error occurred while fetching jobs" });
+      }
+    });
     
     //handle private messages
     handlePrivateMessage(socket,io);
+
+    //get private message
+    getPreviousMessages(socket)
+
+    
    
     // Handle disconnect
     socket.on("disconnect", async () => {
