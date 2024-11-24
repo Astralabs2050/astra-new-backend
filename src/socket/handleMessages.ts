@@ -12,50 +12,50 @@ const getMessages = async (senderId: string, receiverId: string) => {
     where: {
       [Op.or]: [
         { senderId, receiverId },
-        { senderId: receiverId, receiverId: senderId }
-      ]
+        { senderId: receiverId, receiverId: senderId },
+      ],
     },
-    order: [['createdAt', 'ASC']],
+    order: [["createdAt", "ASC"]],
     include: [
       {
         model: UsersModel,
-        as: 'sender',
-        attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
+        as: "sender",
+        attributes: {
+          exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"],
+        }, // Exclude sensitive fields
         include: [
           {
             model: MediaModel,
-            as: 'media', 
+            as: "media",
             required: false, // Allow messages without associated media
-           
-          }
-        ]
+          },
+        ],
       },
       {
         model: UsersModel,
-        as: 'receiver',
-        attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
+        as: "receiver",
+        attributes: {
+          exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"],
+        }, // Exclude sensitive fields
         include: [
           {
             model: MediaModel,
-            as: 'media',
+            as: "media",
             required: false,
-            
-          }
-        ]
-      }
-    ]
+          },
+        ],
+      },
+    ],
   });
-  console.log("getMessages",getMessages)
+  console.log("getMessages", getMessages);
 };
-
-
 
 const saveAndBroadcastMessage = async (data: any) => {
   try {
     // Check if the receiver is online
     const receiver = await UsersModel.findOne({
       where: { id: data.receiverId },
-      attributes: ['active']
+      attributes: ["active"],
     });
 
     // Create the message with a seen status based on receiver's availability
@@ -66,7 +66,7 @@ const saveAndBroadcastMessage = async (data: any) => {
       senderId: data.senderId,
       sent: true,
       seen: receiver?.active ?? false,
-      createdAt: data.createdAt
+      createdAt: data.createdAt,
     });
 
     return message;
@@ -76,13 +76,11 @@ const saveAndBroadcastMessage = async (data: any) => {
   }
 };
 
-export async function getPreviousMessages(
-  socket: any,
-) {
+export async function getPreviousMessages(socket: any) {
   socket.on("get_previous_messages", async (data: any) => {
     try {
       const messages = await getMessages(data.senderId, data.receiverId);
-      console.log("messages",messages)
+      console.log("messages", messages);
       socket.emit("previous_messages", messages);
     } catch (error) {
       console.error("Error retrieving previous messages:", error);
@@ -92,7 +90,7 @@ export async function getPreviousMessages(
 
 export async function handlePrivateMessage(socket: any, io: any) {
   socket.on("privateMessage", async (data: any) => {
-    console.log("Private message",data)
+    console.log("Private message", data);
     try {
       const message = await saveAndBroadcastMessage(data);
       io.to(data.receiverId).emit("privateMessage", message);
@@ -122,9 +120,11 @@ export function markAsRead(io: any) {
               senderId: data.senderId,
               seen: false,
             },
-          }
+          },
         );
-        io.to(data.senderId).emit("message_read", { receiverId: data.receiverId });
+        io.to(data.senderId).emit("message_read", {
+          receiverId: data.receiverId,
+        });
       } catch (error) {
         console.error("Error in markAsRead:", error);
       }
@@ -151,4 +151,3 @@ export function typing(io: any) {
     });
   });
 }
-

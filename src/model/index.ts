@@ -27,5 +27,5 @@ export {
   JobApplicationModel,
   JobApplicationProjects,
   SavedJobsModel,
-  MessageModel
+  MessageModel,
 };

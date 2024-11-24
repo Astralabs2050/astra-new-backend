@@ -15,7 +15,7 @@ import {
   JobApplicationModel,
   JobApplicationProjects,
   SavedJobsModel,
-  MessageModel
+  MessageModel,
 } from "./model";
 import { dbConfig } from "../common/utility";
 
@@ -41,7 +41,7 @@ const sequelizeOptions: any = {
     JobApplicationModel,
     JobApplicationProjects,
     SavedJobsModel,
-    MessageModel
+    MessageModel,
   ],
 };
 

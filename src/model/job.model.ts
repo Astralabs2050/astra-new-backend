@@ -47,8 +47,6 @@ export class JobModel extends Model {
   @Column(DataType.BOOLEAN)
   manufacturer!: boolean;
 
-
-
   @AllowNull(true)
   @ForeignKey(() => UsersModel)
   @Column(DataType.UUID)
@@ -60,7 +58,6 @@ export class JobModel extends Model {
     onDelete: "SET NULL", // Optional, based on your requirements
   })
   maker?: UsersModel;
-  
 
   @AllowNull(true)
   @ForeignKey(() => UsersModel)

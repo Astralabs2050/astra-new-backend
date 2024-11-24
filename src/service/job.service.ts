@@ -99,13 +99,20 @@ class jobService {
           {
             model: UsersModel,
             as: "user",
-            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
+            attributes: {
+              exclude: [
+                "password",
+                "isOtpVerified",
+                "otpCreatedAt",
+                "isOtpExp",
+              ],
+            }, // Exclude sensitive fields
           },
         ],
       });
-      
+
       // Remove sensitive fields from the user object
-     
+
       return {
         message: "Saved jobs fetched successfully",
         status: true,
@@ -122,50 +129,52 @@ class jobService {
   public acceptDeclineJobApplication = async (
     jobId: string,
     status: boolean,
-    negotiation: boolean
+    negotiation: boolean,
   ) => {
     const transaction = await sequelize.transaction();
-  
+
     try {
       // Fetch the job application
       const jobApplicationFound = await JobApplicationModel.findByPk(jobId);
       if (!jobApplicationFound) {
         return { message: "Job application not found", status: false };
       }
-  
+
       // Update the job application status
       const [updatedRows] = await JobApplicationModel.update(
         { status, negotiation },
-        { where: { id: jobId }, transaction }
+        { where: { id: jobId }, transaction },
       );
-  
+
       // Ensure the update was successful
       if (!updatedRows) {
         throw new Error("Failed to update job application");
       }
-  
+
       // If the application is accepted, update the job details
       if (status) {
         // Verify the userId exists in the UsersModel
-        const userExists = await UsersModel.findByPk(jobApplicationFound.userId);
+        const userExists = await UsersModel.findByPk(
+          jobApplicationFound.userId,
+        );
         if (!userExists) {
           throw new Error(
-            "The associated user for the brandId does not exist. Update failed."
+            "The associated user for the brandId does not exist. Update failed.",
           );
         }
-  
+
         await JobModel.update(
           {
             timelineStatus: "ongoing",
-            makerId : jobApplicationFound.userId, // Ensure this is a valid user ID
+            makerId: jobApplicationFound.userId, // Ensure this is a valid user ID
           },
-          { where: { id: jobApplicationFound.jobId }, transaction }
+          { where: { id: jobApplicationFound.jobId }, transaction },
         );
       }
-  
+
       // Commit the transaction
       await transaction.commit();
-  
+
       return {
         message: "Job application updated successfully",
         status: true,
@@ -173,7 +182,7 @@ class jobService {
     } catch (error: any) {
       // Roll back the transaction on error
       await transaction.rollback();
-  
+
       return {
         message:
           error?.message ||
@@ -182,18 +191,18 @@ class jobService {
       };
     }
   };
-  
+
   public getOngoingJobApplication = async (id: string, filter?: string) => {
     try {
       const whereClause: any = {
         makerId: id,
       };
-  
+
       // Add timelineStatus to the where clause only if filter is provided
       if (filter) {
         whereClause.timelineStatus = filter;
       }
-  
+
       const getJob = await JobModel.findAll({
         where: whereClause,
         include: [
@@ -234,11 +243,18 @@ class jobService {
                 as: "brand", // Alias defined in UsersModel
               },
             ],
-            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
+            attributes: {
+              exclude: [
+                "password",
+                "isOtpVerified",
+                "otpCreatedAt",
+                "isOtpExp",
+              ],
+            }, // Exclude sensitive fields
           },
         ],
       });
-  
+
       return {
         message: "Ongoing job applications fetched successfully",
         status: true,
@@ -253,7 +269,7 @@ class jobService {
       };
     }
   };
-  
+
   public saveJob = async (userId: string, jobId: string) => {
     try {
       // check if the job is valid
@@ -309,7 +325,14 @@ class jobService {
           {
             model: UsersModel,
             as: "user",
-            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
+            attributes: {
+              exclude: [
+                "password",
+                "isOtpVerified",
+                "otpCreatedAt",
+                "isOtpExp",
+              ],
+            }, // Exclude sensitive fields
           },
         ],
       });
@@ -363,7 +386,14 @@ class jobService {
                 as: "brand", // Alias defined in UsersModel
               },
             ],
-            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
+            attributes: {
+              exclude: [
+                "password",
+                "isOtpVerified",
+                "otpCreatedAt",
+                "isOtpExp",
+              ],
+            }, // Exclude sensitive fields
           },
         ],
       });
@@ -400,7 +430,14 @@ class jobService {
           {
             model: UsersModel,
             as: "user",
-            attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
+            attributes: {
+              exclude: [
+                "password",
+                "isOtpVerified",
+                "otpCreatedAt",
+                "isOtpExp",
+              ],
+            }, // Exclude sensitive fields
           },
         ],
       });
@@ -536,18 +573,18 @@ class jobService {
             },
           ],
         });
-        const sanitizedData = jobApplications.map((application) => {
-          const { user, ...applicationDetails } = application.toJSON(); // Convert Sequelize object to JSON
-          if (user) {
-            // Remove sensitive fields
-            delete user.password;
-            delete user.isOtpVerified;
-            delete user.otpCreatedAt;
-            delete user.isOtpExp;
-          }
-          return { ...applicationDetails, user };
-        });
-        
+      const sanitizedData = jobApplications.map((application) => {
+        const { user, ...applicationDetails } = application.toJSON(); // Convert Sequelize object to JSON
+        if (user) {
+          // Remove sensitive fields
+          delete user.password;
+          delete user.isOtpVerified;
+          delete user.otpCreatedAt;
+          delete user.isOtpExp;
+        }
+        return { ...applicationDetails, user };
+      });
+
       return {
         status: true,
         message: "Got all job applicants",
@@ -574,43 +611,41 @@ class jobService {
       }
 
       // Get applications for the job with pagination
-      console.log("userIduserId",userId)
-      const jobApplications:any =
-        await JobApplicationModel.findOne({
-          where: {
-             jobId: job?.dataValues?.id,
-             userId },
-          include: [
-            {
-              model: UsersModel,
-              as: "user",
-              include: [
-                {
-                  model: CreatorModel,
-                  as: "creator", // Alias defined in UsersModel
-                },
-                {
-                  model: BrandModel,
-                  as: "brand", // Alias defined in UsersModel
-                },
-              ],
-            },
-          ],
-        });
-        console.log("jobApplicationsuser",jobApplications?.user)
-        if (jobApplications?.user) {
-          jobApplications.user.password = null;
-          jobApplications.user.isOtpVerified = null;
-          jobApplications.user.otpCreatedAt = null;
-          jobApplications.user.isOtpExp = null;
-          delete jobApplications?.user?.password;
-          delete jobApplications?.user?.isOtpVerified;
-          delete jobApplications?.user?.otpCreatedAt;
-          delete jobApplications?.user?.isOtpExp;
+      console.log("userIduserId", userId);
+      const jobApplications: any = await JobApplicationModel.findOne({
+        where: {
+          jobId: job?.dataValues?.id,
+          userId,
+        },
+        include: [
+          {
+            model: UsersModel,
+            as: "user",
+            include: [
+              {
+                model: CreatorModel,
+                as: "creator", // Alias defined in UsersModel
+              },
+              {
+                model: BrandModel,
+                as: "brand", // Alias defined in UsersModel
+              },
+            ],
+          },
+        ],
+      });
+      console.log("jobApplicationsuser", jobApplications?.user);
+      if (jobApplications?.user) {
+        jobApplications.user.password = null;
+        jobApplications.user.isOtpVerified = null;
+        jobApplications.user.otpCreatedAt = null;
+        jobApplications.user.isOtpExp = null;
+        delete jobApplications?.user?.password;
+        delete jobApplications?.user?.isOtpVerified;
+        delete jobApplications?.user?.otpCreatedAt;
+        delete jobApplications?.user?.isOtpExp;
       }
-      
-        
-        
+
       return {
         status: true,
         message: "Got job applicant",

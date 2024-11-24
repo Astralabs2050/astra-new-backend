@@ -11,7 +11,7 @@ jobRouter.get("/get-job/:id", isAuthenticated, JobController.getEachJob);
 jobRouter.post("/apply-job", isAuthenticated, JobController.applyJob);
 jobRouter.post("/save-job", isAuthenticated, JobController.saveJob);
 jobRouter.get("/save-job", isAuthenticated, JobController.getSaveJob);
-jobRouter.get("/makers-job", isAuthenticated)
+jobRouter.get("/makers-job", isAuthenticated);
 jobRouter.patch(
   "/appcept-reject-job",
   isAuthenticated,
@@ -26,8 +26,12 @@ jobRouter.get(
 jobRouter.get(
   "/job-application/:id",
   isAuthenticated,
-  JobController.getOneJobApplicants
+  JobController.getOneJobApplicants,
 );
 
-jobRouter.get("/ongoing-job-application", isAuthenticated, JobController.getOngoingJobs)
+jobRouter.get(
+  "/ongoing-job-application",
+  isAuthenticated,
+  JobController.getOngoingJobs,
+);
 export default jobRouter;

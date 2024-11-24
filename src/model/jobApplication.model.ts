@@ -54,7 +54,7 @@ export class JobApplicationModel extends Model {
   @AllowNull(false) // Ensures description cannot be null
   @Column(DataType.TEXT)
   wallet!: string;
-  
+
   @Column(DataType.INTEGER)
   minAmount!: number;
 

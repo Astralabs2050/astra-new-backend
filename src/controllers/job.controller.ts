@@ -116,10 +116,13 @@ class jobController {
 
   public getOngoingJobs = async (req: Request, res: Response) => {
     try {
-      const id = req?.query?.id
-      const status = req?.query?.status
-      console.log("status",status,req?.query)
-      const response = await JobService.getOngoingJobApplication(id as string,status as timelineStatus)
+      const id = req?.query?.id;
+      const status = req?.query?.status;
+      console.log("status", status, req?.query);
+      const response = await JobService.getOngoingJobApplication(
+        id as string,
+        status as timelineStatus,
+      );
       return res.json(response);
     } catch (error: any) {
       return res.status(400).json({
@@ -131,9 +134,8 @@ class jobController {
 
   public getJobApplicants = async (req: Request, res: Response) => {
     try {
-     
-      const jobId:any = req.query?.jobId;
-     console.log("jobId",jobId)
+      const jobId: any = req.query?.jobId;
+      console.log("jobId", jobId);
       const response = await JobService.getJobApplicants(jobId);
       return res.json(response);
     } catch (error: any) {
@@ -147,8 +149,8 @@ class jobController {
   public getOneJobApplicants = async (req: Request, res: Response) => {
     try {
       const { id } = (req as any)?.user;
-      const jobId:any = req.query?.jobId;
-      const userId:any = req.query?.userId
+      const jobId: any = req.query?.jobId;
+      const userId: any = req.query?.userId;
       const response = await JobService.getOneJobApplicants(jobId, userId);
       return res.json(response);
     } catch (error: any) {
