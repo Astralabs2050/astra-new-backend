@@ -183,13 +183,19 @@ class jobService {
     }
   };
   
-  public getOngoingJobApplication = async(id:string,filter: timelineStatus) =>{
-    try{
+  public getOngoingJobApplication = async (id: string, filter?: string) => {
+    try {
+      const whereClause: any = {
+        makerId: id,
+      };
+  
+      // Add timelineStatus to the where clause only if filter is provided
+      if (filter) {
+        whereClause.timelineStatus = filter;
+      }
+  
       const getJob = await JobModel.findAll({
-        where:{
-          makerId:id,
-          timelineStatus:filter
-        },
+        where: whereClause,
         include: [
           {
             model: DesignModel,
@@ -229,24 +235,25 @@ class jobService {
               },
             ],
             attributes: { exclude: ["password", "isOtpVerified", "otpCreatedAt", "isOtpExp"] }, // Exclude sensitive fields
-          }
-        ]
-      })
-       return {
+          },
+        ],
+      });
+  
+      return {
         message: "Ongoing job applications fetched successfully",
         status: true,
-        data: getJob
-       }  
-    }catch(error:any){
+        data: getJob,
+      };
+    } catch (error: any) {
       return {
         message:
           error?.message ||
           "An error occurred while fetching ongoing job applications",
         status: false,
-      }
+      };
     }
-  }
-
+  };
+  
   public saveJob = async (userId: string, jobId: string) => {
     try {
       // check if the job is valid

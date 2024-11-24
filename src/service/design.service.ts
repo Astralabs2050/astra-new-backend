@@ -19,17 +19,28 @@ class DesignClass {
       const apiKey = process.env.OPEN_API_KEY;
       const url = "https://api.openai.com/v1/images/generations";
 
-      // Prepare the request payload
+      const userInput = data?.prompt.trim(); // User's input, e.g., "a red evening gown with a mermaid silhouette"
+
+      // Define the base template variations
+      const promptVariations = [
+        `An ultra-detailed, photorealistic depiction of ${userInput}, presented on a plain background without any models. The design features high-quality materials and intricate details.`,
+        `A stunning, high-definition image of ${userInput}, isolated on a simple backdrop with no models. Showcasing exceptional craftsmanship and elegant design.`,
+        `A realistic, detailed render of ${userInput}, displayed alone on a plain background. Emphasizing beautiful aesthetics and meticulous attention to detail.`,
+        `A professional, high-quality photograph of ${userInput}, set against a plain background with no models. The outfit exhibits exquisite design and fine craftsmanship.`
+      ];
+      
+      // Choose a random prompt variation from the list or cycle through them
+      const selectedPrompt = promptVariations[Math.floor(Math.random() * promptVariations.length)];
+      
+      // Structure the request data
       const requestData: any = {
-        prompt: `An ultra-detailed, photorealistic depiction of ${data.prompt}, presented on a plain background without any models. The design features high-quality materials and intricate details.",
-  "A stunning, high-definition image of ${data.prompt}, isolated on a simple backdrop with no models. Showcasing exceptional craftsmanship and elegant design.",
-  "A realistic, detailed render of ${data.prompt}, displayed alone on a plain background. Emphasizing beautiful aesthetics and meticulous attention to detail.",
-  "A professional, high-quality photograph of ${data.prompt}, set against a plain background with no models. The outfit exhibits exquisite design and fine craftsmanship.`,
+        prompt: `${selectedPrompt}. Create a highly detailed illustration with vibrant colors and a clear, professional design. Focus on intricate patterns, textures, and lighting effects, ensuring the composition is visually appealing and suitable for presentation. Avoid any faces or human figures. The design should be artistic, clean, and polished, making it perfect for showcasing in a professional setting.`,
         n: 4, // Number of image iterations to generate
         size: "512x512", // Resolution of the images
-        quality:"hd"
+        quality: "hd" // Ensure high-quality output
       };
-
+      
+      
       // Check if there is an image (URL or base64) provided
       if (data.image) {
         requestData["image"] = data.image; // Include image if provided
