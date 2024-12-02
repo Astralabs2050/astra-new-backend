@@ -160,6 +160,20 @@ class jobController {
       });
     }
   };
+
+  public getJobDescWithAi = async (req: Request, res: Response) => {
+    try {
+      const { jobId }: any = req.query;
+      console.log("req.params", req.params);
+      const response = await JobService.generateJobDescWithAi(jobId);
+      return res.json(response);
+    } catch (error: any) {
+      return res.status(400).json({
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      });
+    }
+  };
 }
 const JobController = new jobController();
 export default JobController;

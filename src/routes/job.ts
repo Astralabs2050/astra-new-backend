@@ -11,6 +11,11 @@ jobRouter.get("/get-job/:id", isAuthenticated, JobController.getEachJob);
 jobRouter.post("/apply-job", isAuthenticated, JobController.applyJob);
 jobRouter.post("/save-job", isAuthenticated, JobController.saveJob);
 jobRouter.get("/save-job", isAuthenticated, JobController.getSaveJob);
+jobRouter.get(
+  "/generate-job-desc",
+  isAuthenticated,
+  JobController.getJobDescWithAi,
+);
 jobRouter.get("/makers-job", isAuthenticated);
 jobRouter.patch(
   "/appcept-reject-job",
