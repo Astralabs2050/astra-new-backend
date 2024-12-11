@@ -163,9 +163,11 @@ class jobController {
 
   public getJobDescWithAi = async (req: Request, res: Response) => {
     try {
-      const { jobId }: any = req.query;
-      console.log("req.params", req.params);
-      const response = await JobService.generateJobDescWithAi(jobId);
+
+      
+      const { design}: any = req.body;
+      console.log("req.params", req.body);
+      const response = await JobService.generateJobDescWithAi(req.body);
       return res.json(response);
     } catch (error: any) {
       return res.status(400).json({

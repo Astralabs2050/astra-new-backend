@@ -300,34 +300,18 @@ class jobService {
       };
     }
   };
-  public generateJobDescWithAi = async (jobId: string) => {
+  public generateJobDescWithAi = async (design: any) => {
     try {
       // Fetch job details
-      const job = await JobModel.findOne({
-        where: { id: jobId },
-        include: [
-          {
-            model: DesignModel,
-            as: "design",
-            include: [
-              {
-                model: PieceModel,
-                as: "pieces", // Include all pieces associated with the design
-              },
-            ],
-          },
-        ],
-      });
-
-      if (!job) {
+      if (!design) {
         return {
-          message: "No job found",
+          message: "No design found",
           status: false,
         };
       }
 
       // Extract job details
-      const { design } = job;
+  
       const { outfitName, pieceNumber, prompt, creatorType } = design;
       const pieces: any = design?.pieces?.map((piece: any) => ({
         type: piece.pieceType,
@@ -346,7 +330,7 @@ class jobService {
               `${piece.type} (Design Number: ${piece.number}, Price: ${piece.price})`,
           )
           .join(", ")}.
-        Timeline for the job: ${job.timeline}.
+        Timeline for the job: ${design.timeline}.
         Ensure the description is concise and under 500 characters the response should be returned as a stringified json, that i can parse later with JSON.parse and remove the line break and any type of text formatting.
       `;
       console.log("ai prompt", aiPrompt);
