@@ -12,6 +12,8 @@ import { JobApplicationModel } from "./jobApplication.model";
 import { JobApplicationProjects } from "./JobApplicationProjects.model";
 import { SavedJobsModel } from "./savedJob.model";
 import { MessageModel } from "./ChatMessage.model";
+import { SalestModel } from "./sales.model";
+import { AnalysisModel } from "./analytics.model";
 
 export {
   UsersModel,
@@ -28,4 +30,6 @@ export {
   JobApplicationProjects,
   SavedJobsModel,
   MessageModel,
+  SalestModel,
+  AnalysisModel
 };
