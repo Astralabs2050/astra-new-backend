@@ -366,7 +366,7 @@ class jobService {
       if (generatedDescription) {
         return {
           message: "Job description generated successfully",
-          description: JSON.parse(parsedDescription),
+          data: JSON.parse(parsedDescription),
           status: true,
         };
       } else {
@@ -375,13 +375,6 @@ class jobService {
           status: false,
         };
       }
-
-      // Return the generated description
-      return {
-        message: "Job description generated successfully",
-        description: generatedDescription,
-        status: true,
-      };
     } catch (error: any) {
       return {
         message:
