@@ -23,7 +23,7 @@ const handleSocketConnection = (io: {
     try {
       const token =
         socket?.handshake?.headers?.token || socket?.handshake?.auth?.token;
-      console.log("token from socket12", token);
+      console.log("token from socket12",socket);
       if (!token) {
         throw new Error("Unauthorized: Missing token");
       }

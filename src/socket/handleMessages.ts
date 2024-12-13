@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
-import { JobModel, MediaModel, UsersModel } from "../model";
+import { BrandModel, CreatorModel, JobModel, MediaModel, UsersModel } from "../model";
 import { MessageModel } from "../model/ChatMessage.model";
+import sendEmail from "../../util/sendMail";
 
 export function sendMessage(io: any) {}
 
@@ -68,7 +69,60 @@ const saveAndBroadcastMessage = async (data: any) => {
       seen: receiver?.active ?? false,
       createdAt: data.createdAt,
     });
-
+    // find the receiver on the database 
+    const receiverData = await UsersModel.findOne({
+      where: {id: data.receiverId},
+      include: [
+        {
+          model: CreatorModel,
+          as: "creator", // Alias defined in the association
+          required: false, // Make it optional in case the user is not a creator
+        },
+        {
+          model: BrandModel,
+          as: "brand", // Alias defined in the association
+          required: false, // Make it optional in case the user is not a brand
+        }
+      ],
+    })
+    const senderData = await UsersModel.findOne({
+      where: {id: data.senderId},
+       include: [
+                {
+                  model: CreatorModel,
+                  as: "creator", // Alias defined in the association
+                  required: false, // Make it optional in case the user is not a creator
+                },
+                {
+                  model: BrandModel,
+                  as: "brand", // Alias defined in the association
+                  required: false, // Make it optional in case the user is not a brand
+                }
+              ],
+    })
+    console.log("receiverData",receiverData?.dataValues?.brand?.dataValues?.username)
+    if(receiverData?.dataValues?.email && senderData?.dataValues?.email){
+      sendEmail(
+        receiverData?.dataValues?.email,
+        `You have a Message from ${senderData?.dataValues?.creator?.dataValues?.fullName || senderData?.dataValues?.brand?.dataValues?.username}`,
+        `
+        <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+          <h2 style="color: #4CAF50;">You have a new message!</h2>
+          <p>Hi ${receiverData?.dataValues?.brand?.dataValues?.username || receiverData?.dataValues?.creator?.dataValues?.fullName || "there"},</p>
+          <p>
+            You have received a message from <strong>${senderData?.dataValues?.creator?.dataValues?.fullName || senderData?.dataValues?.brand?.dataValues?.username || "a user"}</strong>.
+          </p>
+          <p>
+            Please check your inbox for further details.
+          </p>
+          <p style="margin-top: 20px;">Thank you,</p>
+          <p><strong>Your Team</strong></p>
+        </div>
+        `
+      );
+      
+    }
+    //send mail to the receiver
     return message;
   } catch (error) {
     console.error("Error in saveAndBroadcastMessage:", error);
