@@ -110,7 +110,7 @@ const saveAndBroadcastMessage = async (data: any) => {
       "receiverData",
       receiverData?.dataValues?.brand?.dataValues?.username,
     );
-    if (receiverData?.dataValues?.email && senderData?.dataValues?.email) {
+    if (receiverData?.dataValues?.email && senderData?.dataValues?.email && !receiver?.active) {
       sendEmail(
         receiverData?.dataValues?.email,
         `You have a Message from ${
