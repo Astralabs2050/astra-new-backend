@@ -13,7 +13,7 @@ routes.use("/user", isAuthenticated, userRouter);
 routes.use("/design", designRouter);
 routes.use("/job", jobRouter);
 routes.use("/wait-list", waitListRouter);
-routes.use("/store", storeRouter)
+routes.use("/store", storeRouter);
 routes.get("/", (req, res) => {
   res.send("working now2");
 });

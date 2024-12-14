@@ -35,6 +35,11 @@ export class JobModel extends Model {
   @Column(DataType.DATE)
   timeline?: Date;
 
+  @AllowNull(true)
+  @Default(0)
+  @Column(DataType.INTEGER)
+  impression?: number;
+
   @Default(false)
   @Column(DataType.BOOLEAN)
   status!: boolean;

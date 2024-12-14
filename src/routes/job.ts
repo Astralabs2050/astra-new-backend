@@ -11,6 +11,8 @@ jobRouter.get("/get-job/:id", isAuthenticated, JobController.getEachJob);
 jobRouter.post("/apply-job", isAuthenticated, JobController.applyJob);
 jobRouter.post("/save-job", isAuthenticated, JobController.saveJob);
 jobRouter.get("/save-job", isAuthenticated, JobController.getSaveJob);
+jobRouter.patch("/update-job", isAuthenticated, JobController.updateJob);
+
 jobRouter.post(
   "/generate-job-desc",
   isAuthenticated,

@@ -1,4 +1,1 @@
-export class StoreController {
-
-}
-
+export class StoreController {}

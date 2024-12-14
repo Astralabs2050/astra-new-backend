@@ -15,6 +15,7 @@ import { JobApplicationModel } from "../model/jobApplication.model";
 import { SavedJobsModel } from "../model/savedJob.model";
 import { timelineStatus } from "../model/job.model";
 import axios from "axios";
+import { String } from "aws-sdk/clients/acm";
 
 class jobService {
   public createJob = async (data: any, userId: string) => {
@@ -76,6 +77,32 @@ class jobService {
       await transaction.rollback();
       return {
         message: error?.message || "An error occurred during job creation",
+        status: false,
+      };
+    }
+  };
+
+  public updateJob = async (jobId: string, timelineStatus: timelineStatus) => {
+    try {
+      const updatedJob = await JobModel.update(
+        { timelineStatus },
+        { where: { id: jobId } },
+      );
+
+      if (updatedJob[0] === 0) {
+        return {
+          message: "No job found with the given ID",
+          status: false,
+        };
+      }
+
+      return {
+        message: "Job status updated successfully",
+        status: true,
+      };
+    } catch (error: any) {
+      return {
+        message: error?.message || "An error occurred during job ",
         status: false,
       };
     }
@@ -311,7 +338,7 @@ class jobService {
       }
 
       // Extract job details
-  
+
       const { outfitName, pieceNumber, prompt, creatorType } = design;
       const pieces: any = design?.pieces?.map((piece: any) => ({
         type: piece.pieceType,
@@ -433,7 +460,7 @@ class jobService {
     }
   };
 
-  public getEachJob = async (jobId: string) => {
+  public getEachJob = async (jobId: string, authUser: any) => {
     try {
       const job = await JobModel.findOne({
         where: { id: jobId },
@@ -489,7 +516,22 @@ class jobService {
           status: false,
         };
       }
+      //logic for increasing job impression
+      //check who is acessing the end point
+      // if the user is not the owner of the job, increase impression count
+      // if the user is the owner, return the job as it is
+      // if the user is not authenticated, return the job as it is
+      // if the user is authenticated and the owner, return the job with increased impression count
 
+      if (job?.dataValues?.userId !== authUser?.id) {
+        //increasing impression
+        console.log("increasing job impression", job?.dataValues?.impression);
+        //null case
+        if (job?.dataValues?.impression === null) {
+          await JobModel.update({ impression: 1 }, { where: { id: jobId } });
+        }
+        await JobModel.increment("impression", { where: { id: jobId } });
+      }
       return {
         status: true,
         message: "gotten job",

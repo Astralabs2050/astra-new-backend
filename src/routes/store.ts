@@ -1,14 +1,10 @@
-import {Router} from "express"
-import isAuthenticated from "../middleware/authorization"
-import { StoreController } from "../controllers/store.controller"
+import { Router } from "express";
+import isAuthenticated from "../middleware/authorization";
+import { StoreController } from "../controllers/store.controller";
 
+const storeRouter = Router();
+const authController = new StoreController();
 
-const storeRouter = Router()
-const authController = new StoreController()
+storeRouter.get("/analytics");
 
-storeRouter.get('/analytics')
-
-
-
-
-export default storeRouter
+export default storeRouter;

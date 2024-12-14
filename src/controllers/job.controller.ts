@@ -75,11 +75,26 @@ class jobController {
     }
   };
 
+  public updateJob = async (req: Request, res: Response) => {
+    try {
+      const { id } = (req as any)?.user;
+      const { jobId, status } = (req as any)?.body;
+      const response = await JobService.updateJob(jobId, status);
+      return res.json(response);
+    } catch (error: any) {
+      return res.status(400).json({
+        status: false,
+        message: `An error occurred: ${error?.message || error}`,
+      });
+    }
+  };
+
   public getEachJob = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      const authUser = (req as any)?.user;
       console.log("the job id", id);
-      const response = await JobService.getEachJob(id);
+      const response = await JobService.getEachJob(id, authUser);
       return res.json(response);
     } catch (error: any) {
       return res.status(400).json({
@@ -163,9 +178,7 @@ class jobController {
 
   public getJobDescWithAi = async (req: Request, res: Response) => {
     try {
-
-      
-      const { design}: any = req.body;
+      const { design }: any = req.body;
       console.log("req.params", req.body);
       const response = await JobService.generateJobDescWithAi(req.body);
       return res.json(response);
