@@ -358,7 +358,7 @@ class jobService {
           )
           .join(", ")}.
         Timeline for the job: ${design.timeline}.
-        Ensure the description is concise and under 500 characters the response should be returned as a stringified json, that i can parse later with JSON.parse and remove the line break and any type of text formatting.
+        Ensure the description is concise and under 500 characters the response should be returned as a stringified json having just one key jobDescription, that i can parse later with JSON.parse and remove the line break and any type of text formatting.
       `;
       console.log("ai prompt", aiPrompt);
       // Query OpenAI API
@@ -381,14 +381,18 @@ class jobService {
         },
       );
 
-      console.log(
-        "response from openai",
-        JSON.parse(response.data.choices[0]?.message?.content),
-      );
+     // Assuming content is a string, let's log it before parsing:
+const generatedDescription = response.data.choices[0]?.message?.content;
+console.log("Generated Description:", generatedDescription);
 
-      const generatedDescription = response.data.choices[0]?.message?.content;
-      const sanitizedDescription = generatedDescription.trim();
-      const parsedDescription = JSON.parse(sanitizedDescription);
+// If it's not a valid JSON, try parsing only if it's a valid stringified object.
+      let parsedDescription;
+      try {
+        parsedDescription = JSON.parse(generatedDescription);
+      } catch (error) {
+        console.log("Content is not valid JSON, using raw string");
+        parsedDescription = generatedDescription; // Fallback to raw string if it's not JSON
+      }
 
       if (generatedDescription) {
         return {
