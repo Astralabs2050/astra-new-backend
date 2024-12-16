@@ -381,11 +381,11 @@ class jobService {
         },
       );
 
-     // Assuming content is a string, let's log it before parsing:
-const generatedDescription = response.data.choices[0]?.message?.content;
-console.log("Generated Description:", generatedDescription);
+      // Assuming content is a string, let's log it before parsing:
+      const generatedDescription = response.data.choices[0]?.message?.content;
+      console.log("Generated Description:", generatedDescription);
 
-// If it's not a valid JSON, try parsing only if it's a valid stringified object.
+      // If it's not a valid JSON, try parsing only if it's a valid stringified object.
       let parsedDescription;
       try {
         parsedDescription = JSON.parse(generatedDescription);
