@@ -10,96 +10,133 @@ class DesignClass {
   public generateNewDesign = async (
     data: {
       prompt: string;
-      image?: string;
+      image?: string; // Image is optional (base64)
     },
-    userId: string,
+    userId: string
   ) => {
     const transaction = await sequelize.transaction(); // Start a new transaction
     try {
       const apiKey = process.env.OPEN_API_KEY;
-      const url = "https://api.openai.com/v1/images/generations";
-
-      const userInput = data?.prompt.trim(); // User's input, e.g., "a red evening gown with a mermaid silhouette"
-
-      // Define the base template variations
-      const promptVariations = [
-        `An ultra-detailed, photorealistic depiction of ${userInput}, presented on a plain background without any models. The design features high-quality materials and intricate details.`,
-        `A stunning, high-definition image of ${userInput}, isolated on a simple backdrop with no models. Showcasing exceptional craftsmanship and elegant design.`,
-        `A realistic, detailed render of ${userInput}, displayed alone on a plain background. Emphasizing beautiful aesthetics and meticulous attention to detail.`,
-        `A professional, high-quality photograph of ${userInput}, set against a plain background with no models. The outfit exhibits exquisite design and fine craftsmanship.`,
-      ];
-
-      // Choose a random prompt variation from the list or cycle through them
-      const selectedPrompt =
-        promptVariations[Math.floor(Math.random() * promptVariations.length)];
-
-      // Structure the request data
-      const requestData: any = {
-        prompt: `${selectedPrompt}. Create a highly detailed illustration with vibrant colors and a clear, professional design. Focus on intricate patterns, textures, and lighting effects, ensuring the composition is visually appealing and suitable for presentation. Avoid any faces or human figures. The design should be artistic, clean, and polished, making it perfect for showcasing in a professional setting.`,
-        n: 4, // Number of image iterations to generate
-        size: "512x512", // Resolution of the images
-        quality: "hd", // Ensure high-quality output
+      const imageUrl = "https://api.openai.com/v1/images/generations"; // DALL·E endpoint
+  
+      // Helper function to analyze image texture
+      const photo_to_text = async (b64photo: string) => {
+        try {
+          const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini',
+              messages: [
+                {
+                  role: 'user',
+                  content: [
+                    { type: 'text', text: 'Summarize this texture...' },
+                    { type: 'image_url', image_url: { url: b64photo } }
+                  ]
+                }
+              ],
+              max_tokens: 300,
+            }),
+          });
+  
+          if (!resp.ok) {
+            throw new Error(`OpenAI API returned an error: ${resp.status} ${resp.statusText}`);
+          }
+  
+          const jsonResponse = await resp.json();
+          return jsonResponse.choices[0].message.content;
+        } catch (error: any) {
+          console.error("Error in photo_to_text:", error?.message || error);
+          throw error;
+        }
       };
-
-      // Check if there is an image (URL or base64) provided
+  
+      let texture_info = "";
       if (data.image) {
-        requestData["image"] = data.image; // Include image if provided
+        console.log("Analyzing texture from provided image...");
+        texture_info = await photo_to_text(data.image);
+        console.log("Texture Analysis Result:", texture_info);
       }
-      console.log("Reaching the service2");
-
-      // Make a request to OpenAI's API
-      const response = await axios.post(url, requestData, {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      // Extract the URLs of the generated images from the response
-      const imageUrls = response.data.data.map((image: any) => image.url);
-      //check if the use exists
+  
+      // Generate prompt
+      const prompt_engine = (prompt: string, texture_info = "") => {
+        const texture_note = texture_info ? `
+          * the material used to make the cloth should be as stated below:
+          -------------------------------
+          ${texture_info}
+          -------------------------------
+        ` : "";
+        return `
+          Description: ${prompt}
+          ---------------
+          From the above text description, extract various clothing attributes...
+          ${texture_note}
+        `;
+      };
+  
+      // Prepare the request data for DALL·E (single iteration at a time)
+      const requestData = {
+        model: 'dall-e-3',
+        quality: 'hd',
+        prompt: prompt_engine(data.prompt, texture_info),
+        n: 1, // Request one iteration at a time
+        size: "1024x1024",
+      };
+  
+      // Function to make API request
+      const generateDesign = async () => {
+        const imageResponse = await axios.post(imageUrl, requestData, {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+        });
+  
+        return imageResponse.data.data[0].url;
+      };
+  
+      // Generate four iterations
+      const imageUrls = await Promise.all([generateDesign(), generateDesign(), generateDesign(), generateDesign()]);
+  
+      // Check if the user exists
       const userExists = await UsersModel.findByPk(userId);
-      if (!userExists)
-        return {
-          status: false,
-          message: "User ID not found in the database.",
-        };
-
-      // Create a new design in the database within the transaction
+      if (!userExists) {
+        return { status: false, message: "User ID not found in the database." };
+      }
+  
+      // Create a new design in the database
       const newDesign = await DesignModel.create(
         {
-          prompt: data.prompt,
+          prompt: prompt_engine(data.prompt, texture_info), // Save summarized prompt
           userId,
-          // Add other fields here if needed, such as outfitName or pieceNumber
         },
-        { transaction },
+        { transaction }
       );
-
-      console.log(newDesign);
-
+  
+      console.log("New design created:", newDesign);
+  
       // Save the generated images in the MediaModel and link them to the design
       const mediaEntries = imageUrls.map(async (url: string) => {
-        return await MediaModel.create(
+        return MediaModel.create(
           {
             link: url,
-            mediaType: "AI_GENERATED_IMAGE", // Assuming mediaType is 'image'
+            mediaType: "AI_GENERATED_IMAGE",
             designIds: newDesign.id,
-
-            // Link to the newly created design
           },
-          { transaction },
+          { transaction }
         );
       });
-
-      // Await all media entries to be created
-      await Promise.all(mediaEntries);
-
-      // Commit the transaction if everything is successful
-      await transaction.commit();
-
-      console.log("Reaching the service3", imageUrls);
+  
+      await Promise.all(mediaEntries); // Await all media entries to be created
+  
+      await transaction.commit(); // Commit the transaction
+  
       return {
-        message: "Designs generated",
+        message: "Designs generated successfully.",
         data: {
           images: imageUrls,
           designId: newDesign.id,
@@ -107,33 +144,27 @@ class DesignClass {
         status: true,
       };
     } catch (err: any) {
-      // Rollback the transaction in case of any errors
       if (transaction) await transaction.rollback();
-
-      console.error("Error generating design iterations:", err.message || err);
-
-      // Custom error message handling
-      let errorMessage =
-        "An unexpected error occurred while generating designs.";
+  
+      console.error("Error generating design:", err.message || err);
+  
+      let errorMessage = "An unexpected error occurred while generating designs.";
       if (err.response) {
-        // API response error
-        errorMessage = `API Error: ${
-          err.response.data.error || err.response.data.message
-        }`;
+        console.error("OpenAI API Error Response:", err.response.data);
+        const apiError = err.response.data.error || err.response.data;
+        errorMessage = `API Error: ${JSON.stringify(apiError)}`;
       } else if (err.request) {
-        // Request was made but no response received
         errorMessage = "Network error: No response received from the API.";
       } else if (err.name === "SequelizeValidationError") {
-        // Database validation error
         errorMessage = "Database validation error: " + err.message;
       }
-
-      return {
-        message: errorMessage,
-        status: false,
-      };
+  
+      return { message: errorMessage, status: false };
     }
   };
+  
+  
+  
   public uploadNewDesign = async (data: any, userId: string) => {
     const transaction = await sequelize.transaction(); // Start a transaction
     try {

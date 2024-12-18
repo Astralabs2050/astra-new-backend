@@ -54,7 +54,6 @@ const getMessages = async (senderId: string, receiverId: string) => {
       },
     ],
   });
-  console.log("getMessages", getMessages);
 };
 
 const saveAndBroadcastMessage = async (data: any) => {
@@ -157,7 +156,7 @@ export async function getPreviousMessages(socket: any) {
   socket.on("get_previous_messages", async (data: any) => {
     try {
       const messages = await getMessages(data.senderId, data.receiverId);
-      console.log("messages", messages);
+
       socket.emit("previous_messages", messages);
     } catch (error) {
       console.error("Error retrieving previous messages:", error);
@@ -167,7 +166,6 @@ export async function getPreviousMessages(socket: any) {
 
 export async function handlePrivateMessage(socket: any, io: any) {
   socket.on("privateMessage", async (data: any) => {
-    console.log("Private message", data);
     try {
       const message = await saveAndBroadcastMessage(data);
       io.to(data.receiverId).emit("privateMessage", message);

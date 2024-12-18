@@ -47,14 +47,6 @@ class jobService {
         };
       }
 
-      // Create job
-      console.log("new job", {
-        description,
-        timeline,
-        manufacturer,
-        designId,
-        userId,
-      });
       const newJob = await JobModel.create(
         {
           description,
@@ -345,8 +337,7 @@ class jobService {
         number: piece.designNumber,
         price: piece.piecePrice,
       }));
-      console.log("things need for job desc design", design);
-      console.log("things need for job desc piece", pieces);
+
       // Construct the prompt for OpenAI
       const aiPrompt = `
         Create a job description for a maker. The creator is a ${creatorType} looking to bring an AI-generated design to life.
@@ -360,7 +351,7 @@ class jobService {
         Timeline for the job: ${design.timeline}.
         Ensure the description is concise and under 500 characters the response should be returned as a stringified json having just one key jobDescription, that i can parse later with JSON.parse and remove the line break and any type of text formatting.
       `;
-      console.log("ai prompt", aiPrompt);
+
       // Query OpenAI API
       const response = await axios.post(
         "https://api.openai.com/v1/chat/completions",
@@ -383,8 +374,8 @@ class jobService {
 
       // Assuming content is a string, let's log it before parsing:
       const generatedDescription = response.data.choices[0]?.message?.content;
-      console.log("Generated Description:", generatedDescription);
 
+      console.log("generatedDescription", generatedDescription);
       // If it's not a valid JSON, try parsing only if it's a valid stringified object.
       let parsedDescription;
       try {
@@ -660,7 +651,7 @@ class jobService {
       };
     } catch (error: any) {
       await transaction.rollback(); // Rollback transaction on error
-      console.error("Error applying for jobs:", error);
+
       return {
         message: "An error occurred while applying for the job",
         status: false,
@@ -722,7 +713,6 @@ class jobService {
         data: sanitizedData,
       };
     } catch (error) {
-      console.error("Error getting job applications:", error);
       throw error;
     }
   };
@@ -742,7 +732,7 @@ class jobService {
       }
 
       // Get applications for the job with pagination
-      console.log("userIduserId", userId);
+
       const jobApplications: any = await JobApplicationModel.findOne({
         where: {
           jobId: job?.dataValues?.id,
@@ -765,7 +755,7 @@ class jobService {
           },
         ],
       });
-      console.log("jobApplicationsuser", jobApplications?.user);
+
       if (jobApplications?.user) {
         jobApplications.user.password = null;
         jobApplications.user.isOtpVerified = null;

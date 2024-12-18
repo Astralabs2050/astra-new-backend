@@ -35,7 +35,7 @@ export class DesignModel extends Model {
   @Column(DataType.INTEGER)
   pieceNumber?: number;
 
-  @Column(DataType.STRING)
+  @Column(DataType.TEXT)
   prompt?: string;
 
   @Column(DataType.STRING)
