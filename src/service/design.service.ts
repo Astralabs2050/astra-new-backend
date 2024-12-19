@@ -12,41 +12,46 @@ class DesignClass {
       prompt: string;
       image?: string; // Image is optional (base64)
     },
-    userId: string
+    userId: string,
   ) => {
     const transaction = await sequelize.transaction(); // Start a new transaction
     try {
       const apiKey = process.env.OPEN_API_KEY;
       const imageUrl = "https://api.openai.com/v1/images/generations"; // DALL·E endpoint
-  
+
       // Helper function to analyze image texture
       const photo_to_text = async (b64photo: string) => {
         try {
-          const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${apiKey}`,
+          const resp = await fetch(
+            "https://api.openai.com/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                  {
+                    role: "user",
+                    content: [
+                      { type: "text", text: "Summarize this texture..." },
+                      { type: "image_url", image_url: { url: b64photo } },
+                    ],
+                  },
+                ],
+                max_tokens: 300,
+              }),
             },
-            body: JSON.stringify({
-              model: 'gpt-4o-mini',
-              messages: [
-                {
-                  role: 'user',
-                  content: [
-                    { type: 'text', text: 'Summarize this texture...' },
-                    { type: 'image_url', image_url: { url: b64photo } }
-                  ]
-                }
-              ],
-              max_tokens: 300,
-            }),
-          });
-  
+          );
+
           if (!resp.ok) {
-            throw new Error(`OpenAI API returned an error: ${resp.status} ${resp.statusText}`);
+            throw new Error(
+              `OpenAI API returned an error: ${resp.status} ${resp.statusText}`,
+            );
           }
-  
+
           const jsonResponse = await resp.json();
           return jsonResponse.choices[0].message.content;
         } catch (error: any) {
@@ -54,22 +59,24 @@ class DesignClass {
           throw error;
         }
       };
-  
+
       let texture_info = "";
       if (data.image) {
         console.log("Analyzing texture from provided image...");
         texture_info = await photo_to_text(data.image);
         console.log("Texture Analysis Result:", texture_info);
       }
-  
+
       // Generate prompt
       const prompt_engine = (prompt: string, texture_info = "") => {
-        const texture_note = texture_info ? `
+        const texture_note = texture_info
+          ? `
           * the material used to make the cloth should be as stated below:
           -------------------------------
           ${texture_info}
           -------------------------------
-        ` : "";
+        `
+          : "";
         return `
           Description: ${prompt}
           ---------------
@@ -77,16 +84,16 @@ class DesignClass {
           ${texture_note}
         `;
       };
-  
+
       // Prepare the request data for DALL·E (single iteration at a time)
       const requestData = {
-        model: 'dall-e-3',
-        quality: 'hd',
+        model: "dall-e-3",
+        quality: "hd",
         prompt: prompt_engine(data.prompt, texture_info),
         n: 1, // Request one iteration at a time
         size: "1024x1024",
       };
-  
+
       // Function to make API request
       const generateDesign = async () => {
         const imageResponse = await axios.post(imageUrl, requestData, {
@@ -95,30 +102,35 @@ class DesignClass {
             "Content-Type": "application/json",
           },
         });
-  
+
         return imageResponse.data.data[0].url;
       };
-  
+
       // Generate four iterations
-      const imageUrls = await Promise.all([generateDesign(), generateDesign(), generateDesign(), generateDesign()]);
-  
+      const imageUrls = await Promise.all([
+        generateDesign(),
+        generateDesign(),
+        generateDesign(),
+        generateDesign(),
+      ]);
+
       // Check if the user exists
       const userExists = await UsersModel.findByPk(userId);
       if (!userExists) {
         return { status: false, message: "User ID not found in the database." };
       }
-  
+
       // Create a new design in the database
       const newDesign = await DesignModel.create(
         {
           prompt: prompt_engine(data.prompt, texture_info), // Save summarized prompt
           userId,
         },
-        { transaction }
+        { transaction },
       );
-  
+
       console.log("New design created:", newDesign);
-  
+
       // Save the generated images in the MediaModel and link them to the design
       const mediaEntries = imageUrls.map(async (url: string) => {
         return MediaModel.create(
@@ -127,14 +139,14 @@ class DesignClass {
             mediaType: "AI_GENERATED_IMAGE",
             designIds: newDesign.id,
           },
-          { transaction }
+          { transaction },
         );
       });
-  
+
       await Promise.all(mediaEntries); // Await all media entries to be created
-  
+
       await transaction.commit(); // Commit the transaction
-  
+
       return {
         message: "Designs generated successfully.",
         data: {
@@ -145,10 +157,11 @@ class DesignClass {
       };
     } catch (err: any) {
       if (transaction) await transaction.rollback();
-  
+
       console.error("Error generating design:", err.message || err);
-  
-      let errorMessage = "An unexpected error occurred while generating designs.";
+
+      let errorMessage =
+        "An unexpected error occurred while generating designs.";
       if (err.response) {
         console.error("OpenAI API Error Response:", err.response.data);
         const apiError = err.response.data.error || err.response.data;
@@ -158,13 +171,11 @@ class DesignClass {
       } else if (err.name === "SequelizeValidationError") {
         errorMessage = "Database validation error: " + err.message;
       }
-  
+
       return { message: errorMessage, status: false };
     }
   };
-  
-  
-  
+
   public uploadNewDesign = async (data: any, userId: string) => {
     const transaction = await sequelize.transaction(); // Start a transaction
     try {
