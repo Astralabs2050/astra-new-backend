@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx nodemon src/index.ts",
-    "start": "npx ts-node src/index.ts",
+    "start": "node --max-old-space-size=2048 node_modules/.bin/ts-node src/index.ts",
     "clean": "npx prettier . --write",
     "push": "npm run clean && git add . && git commit -m '...' && git push",
     "build": "yarn install --ignore-engines && yarn build"
