@@ -1,5 +1,6 @@
-// Import packages
+
 import { Sequelize } from "sequelize-typescript";
+import { dbConfig } from "../common/utility";
 import { Dialect } from "sequelize/types/sequelize";
 import {
   UsersModel,
@@ -19,15 +20,19 @@ import {
   SalestModel,
   AnalysisModel,
 } from "./model";
-import { dbConfig } from "../common/utility";
 
+// Load environment variables (ensure your .env file has POSTGRES_URL defined)
+console.log("POSTGRESS_URL",process.env.POSTGRESS_URL)
+
+// Define sequelize options
 const sequelizeOptions: any = {
-  host: dbConfig.dbhost || "127.0.0.1",
-  port: dbConfig.dbport || 3306,
-  dialect: "mysql" as Dialect,
-  logging: false,
+  dialect: "postgres" as Dialect,
+  logging: process.env.NODE_ENV === "development" ? console.log : false, // Enable logging in development
   dialectOptions: {
-    ssl: { require: true, rejectUnauthorized: false },
+    ssl: {
+      require: true,
+      rejectUnauthorized: false, // This ensures SSL works even with self-signed certificates
+    },
   },
   models: [
     UsersModel,
@@ -49,24 +54,21 @@ const sequelizeOptions: any = {
   ],
 };
 
-const sequelize = new Sequelize(
-  dbConfig.dbname,
-  dbConfig.dbuser,
-  dbConfig.dbpassword,
-  sequelizeOptions,
-);
-// sequelize.addModels([ParkOwner, IndividualParkOwner, CorporateParkOwner]);
+// Initialize Sequelize
+const sequelize = new Sequelize(dbConfig?.dbUrl, sequelizeOptions);
 
+// Initialize the database
 const initDB = async () => {
-  await sequelize.authenticate();
-  await sequelize
-    .sync({ alter: true })
-    .then(async () => {
-      console.log("Database connected!");
-    })
-    .catch(function (err: any) {
-      console.log(err, "Something went wrong with the Database Update!");
-    });
+  try {
+    await sequelize.authenticate();
+    console.log("Database connection established successfully.");
+
+    // Sync models
+    await sequelize.sync({ alter: true });
+    console.log("Database schema synchronized.");
+  } catch (error: any) {
+    console.error("Database initialization error:", error.message);
+  }
 };
 
 export { sequelize, initDB };
