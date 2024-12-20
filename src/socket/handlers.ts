@@ -1,4 +1,5 @@
 import { ChatMessageModel } from "../model";
+import { Configuration, OpenAIApi } from "openai";
 import { Op } from "sequelize";
 
 // Track online users and their sockets
@@ -185,3 +186,62 @@ export const test = (socket: any) => {
     });
   });
 };
+
+/* Function to call GPT-4 for translation
+async function translateMessage(message: string, targetLanguage: string): Promise<string> {
+  try {
+      const response = await openai.createChatCompletion({
+          model: "gpt-4o-mini",
+          messages: [
+              { role: "system", content: `Translate the following message to ${targetLanguage}:` },
+              { role: "user", content: message },
+          ],
+      });
+
+      const translatedText = response.data.choices[0]?.message?.content?.trim();
+      return translatedText || message; // Fallback to the original message in case of any issues
+  } catch (error) {
+      console.error("Translation error:", error);
+      return message; // Return the original message if translation fails
+  }
+}
+
+// Handler to integrate into your existing messaging workflow
+export const handleChatTranslation = (socket: any) => {
+  socket.on("send_message", async (data: { content: string; receiverId: string; targetLanguage: string }) => {
+      try {
+          const { content, receiverId, targetLanguage } = data;
+
+          // Translate the message only if the target language is set
+          const translatedContent = targetLanguage
+              ? await translateMessage(content, targetLanguage)
+              : content;
+
+          // Send the original message to the receiver
+          const receiverSocket = onlineUsers.get(receiverId);
+          if (receiverSocket) {
+              receiverSocket.emit("new_message", {
+                  content, // Original message
+                  translatedContent, // Translated message for convenience
+                  senderId: socket.user.id,
+                  senderName: socket.user.name,
+                  receiverId,
+                  createdAt: new Date(),
+              });
+          }
+
+          // Confirm to sender
+          socket.emit("message_sent", {
+              content,
+              translatedContent,
+              status: "delivered",
+              createdAt: new Date(),
+          });
+
+      } catch (error) {
+          console.error("Error handling message translation:", error);
+          socket.emit("error", "Failed to send message with translation.");
+      }
+  });
+};
+Note for Mr Daniel, i realized we will need to change a certain part of the sign  in process toinclude some default languages availabe for selection, and then to even properly test this the frontend needs to be updated for this as well, its all so long ad im tired */
