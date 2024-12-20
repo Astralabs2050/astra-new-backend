@@ -163,6 +163,52 @@ export async function getPreviousMessages(socket: any) {
     }
   });
 }
+export async function translateMessage(message: string, language: string): Promise<string> {
+  const apiKey = process.env.OPEN_API_KEY; // Ensure your OpenAI API key is set in environment variables
+  const apiUrl = "https://api.openai.com/v1/chat/completions";
+
+  if (!apiKey) {
+    throw new Error("OpenAI API key is not set.");
+  }
+
+  const body = {
+    model: "gpt-3.5-turbo",
+    messages: [
+      { role: "system", content: `You are a translation assistant.` },
+      { role: "user", content: `Translate the following message to ${language || "english"}, only return the translated text: "${message}"` },
+    ],
+    max_tokens: 100,
+    temperature: 0.3,
+  };
+
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorDetails = await response.json();
+    throw new Error(
+      `OpenAI API request failed: ${response.status} - ${response.statusText} - ${JSON.stringify(
+        errorDetails
+      )}`
+    );
+  }
+
+  const data = await response.json();
+  const translatedText = data.choices[0]?.message?.content;
+
+  if (!translatedText) {
+    throw new Error("Translation failed: No content returned from OpenAI.");
+  }
+
+  return translatedText.trim();
+}
+
 
 export async function handlePrivateMessage(socket: any, io: any) {
   socket.on("privateMessage", async (data: any) => {

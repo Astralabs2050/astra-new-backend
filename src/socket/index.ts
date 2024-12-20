@@ -3,7 +3,7 @@ import { Handshake } from "./../../node_modules/socket.io/dist/socket-types.d";
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import { test } from "./handlers";
-import { getPreviousMessages, handlePrivateMessage } from "./handleMessages";
+import { getPreviousMessages, handlePrivateMessage, translateMessage } from "./handleMessages";
 import {
   BrandModel,
   CreatorModel,
@@ -144,7 +144,6 @@ const handleSocketConnection = (io: {
         });
 
         //find jobs where the user is the maker
-        console.log("socket?.id111", socket?.id);
         const makersJob = await JobModel.findAll({
           where: {
             makerId: socket?.id,
@@ -235,7 +234,25 @@ const handleSocketConnection = (io: {
 
     //handle private messages
     handlePrivateMessage(socket, io);
+    //handle translation
+    socket.on("translation", async(data: any)=>{
+      try{
+      const receiver = await UsersModel.findOne({
+        where: { id: socket.id},
+        attributes: ["language"],
+      });
+      console.log("receiver111", receiver?.dataValues?.language);
+      const translatedMessage = await translateMessage(data.message, receiver?.dataValues?.language);
 
+      socket.emit("translation", translatedMessage);
+      console.log("translatedMessage", translatedMessage);
+      }catch (error) {
+        console.error("Error in translation:", error);
+        socket.emit("error", {
+          message: "An error occurred while translating",
+        });
+      }
+    })
     //get private message
     getPreviousMessages(socket);
 
@@ -247,3 +264,4 @@ const handleSocketConnection = (io: {
 };
 
 export { handleSocketConnection };
+
