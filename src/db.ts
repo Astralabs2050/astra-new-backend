@@ -22,7 +22,7 @@ import {
 } from "./model";
 
 // Load environment variables (ensure your .env file has POSTGRES_URL defined)
-console.log("POSTGRESS_URL",process.env.POSTGRESS_URL)
+
 
 // Define sequelize options
 const sequelizeOptions: any = {
