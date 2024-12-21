@@ -23,7 +23,7 @@ import {
 
 // Load environment variables (ensure your .env file has POSTGRES_URL defined)
 
-
+console.log("dbConfig?.dbUrl",dbConfig?.dbUrl)
 // Define sequelize options
 const sequelizeOptions: any = {
   dialect: "postgres" as Dialect,
