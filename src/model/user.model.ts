@@ -56,6 +56,10 @@ export class UsersModel extends Model {
   @Column(DataType.STRING)
   password!: string;
 
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  language!: string;
+
   @Default(false)
   @Column(DataType.BOOLEAN)
   verified?: boolean;
