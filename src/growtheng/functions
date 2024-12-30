@@ -1,0 +1,97 @@
+
+import axios from 'axios';
+import cheerio from 'cheerio';
+import { EmailService } from '../../services/email';
+
+interface ManufacturerContact {
+    name: string;
+    email: string;
+    website: string;
+    location?: string;
+}
+
+async function scrapeFashionManufacturers(searchUrl: string): Promise<ManufacturerContact[]> {
+    try {
+        const response = await axios.get(searchUrl);
+        const $ = cheerio.load(response.data);
+        const manufacturers: ManufacturerContact[] = [];
+
+        // This selector pattern would need to be adjusted based on the specific website being scraped
+        $('.manufacturer-listing').each((_, element) => {
+            const name = $(element).find('.company-name').text().trim();
+            const email = $(element).find('.email').text().trim();
+            const website = $(element).find('.website').attr('href');
+            const location = $(element).find('.location').text().trim();
+
+            if (email) {
+                manufacturers.push({
+                    name,
+                    email,
+                    website: website || '',
+                    location
+                });
+            }
+        });
+
+        return manufacturers;
+    } catch (error) {
+        console.error('Error scraping manufacturers:', error);
+        return [];
+    }
+}
+
+async function sendIntroductoryEmail(contact: ManufacturerContact): Promise<boolean> {
+    try {
+        const emailService = new EmailService();
+        
+        const emailTemplate = `
+Dear ${contact.name},
+
+I hope this email finds you well. I came across your manufacturing business and wanted to introduce Astra, a cutting-edge platform that connects fashion manufacturers with brands and designers.
+
+Our service offers:
+- Direct access to qualified fashion brands
+- Streamlined communication and project management
+- Secure payment processing
+- Enhanced online presence in the fashion industry
+
+Would you be interested in learning more about how Astra can help grow your manufacturing business?
+
+Best regards,
+The Astra Team
+        `;
+
+        await emailService.sendEmail({
+            to: contact.email,
+            subject: 'Partnership Opportunity for Fashion Manufacturers - Astra Platform',
+            text: emailTemplate
+        });
+
+        return true;
+    } catch (error) {
+        console.error('Error sending email to manufacturer:', error);
+        return false;
+    }
+}
+
+export async function generateManufacturerLeads(searchUrls: string[]): Promise<void> {
+    const processedEmails = new Set<string>();
+
+    for (const url of searchUrls) {
+        const manufacturers = await scrapeFashionManufacturers(url);
+        
+        for (const manufacturer of manufacturers) {
+            // Avoid sending duplicate emails
+            if (!processedEmails.has(manufacturer.email)) {
+                const emailSent = await sendIntroductoryEmail(manufacturer);
+                
+                if (emailSent) {
+                    processedEmails.add(manufacturer.email);
+                    // Add delay between emails to avoid being flagged as spam
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                }
+            }
+        }
+    }
+}
+
